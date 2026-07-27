@@ -1,0 +1,14 @@
+/target
+/node_modules
+/test-ledger
+.anchor
+.DS_Store
+
+# Never commit real keypairs, including the program deploy authority.
+# /target already covers target/deploy/inertia_protocol-keypair.json.
+*-keypair.json
+id.json
+
+.env
+.env.local
+*.log

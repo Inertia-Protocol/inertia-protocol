@@ -1,0 +1,20 @@
+[package]
+name = "inertia-protocol"
+version = "0.1.0"
+description = "Trustless JIT escrow that rescues stalled Solana transactions via keeper bot acceleration"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "inertia_protocol"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.31.1"
+anchor-spl = "0.31.1"
