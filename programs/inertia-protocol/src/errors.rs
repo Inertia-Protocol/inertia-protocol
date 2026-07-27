@@ -26,4 +26,8 @@ pub enum InertiaError {
     Overflow,
     #[msg("Fee split does not sum to total buffer")]
     FeeSplitMismatch,
+    #[msg("Supplied swap instruction data is missing or has the wrong discriminator")]
+    InvalidSwapInstructionData,
+    #[msg("Swap output was below the escrow's minimum acceptable amount")]
+    OutputBelowMinimum,
 }
