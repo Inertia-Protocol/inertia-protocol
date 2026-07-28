@@ -117,6 +117,11 @@ pub fn handler<'info>(
         ctx.accounts.destination_token_account.to_account_info(),
         ctx.accounts.escrow.to_account_info(),
         ctx.accounts.token_program.to_account_info(),
+        // invoke_signed looks up the target program in this slice, not just
+        // in the instruction's own AccountMeta list -- omitting it produces
+        // "Unsupported program id" even though the account isn't referenced
+        // by the instruction's account metas at all.
+        ctx.accounts.swap_program.to_account_info(),
     ];
     for acc in ctx.remaining_accounts.iter() {
         account_metas.push(AccountMeta {
