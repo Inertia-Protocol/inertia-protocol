@@ -1,12 +1,12 @@
 [package]
-name = "inertia-protocol"
+name = "mock-dex"
 version = "0.1.0"
-description = "Trustless JIT escrow that rescues stalled Solana transactions via keeper bot acceleration"
+description = "Minimal swap-shaped program for local integration testing of execute_swap's CPI relay. Not part of the protocol."
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "inertia_protocol"
+name = "mock_dex"
 
 [features]
 no-entrypoint = []
@@ -19,4 +19,3 @@ default = []
 [dependencies]
 anchor-lang = "1.1.2"
 anchor-spl = "1.1.2"
-solana-instructions-sysvar = "3.0.1"

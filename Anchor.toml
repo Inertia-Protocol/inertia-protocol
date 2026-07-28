@@ -7,6 +7,7 @@ skip-lint = false
 
 [programs.localnet]
 inertia_protocol = "8ST3LRU5gv8ijZehvXdwRzc6VnvqbVozCCdFzEzqhqbW"
+mock_dex = "4uGiKQe9yiD9bCKX9nRrVZot9HkPKV7w8GN8acoAkYyP"
 
 [programs.devnet]
 inertia_protocol = "8ST3LRU5gv8ijZehvXdwRzc6VnvqbVozCCdFzEzqhqbW"
@@ -15,8 +16,8 @@ inertia_protocol = "8ST3LRU5gv8ijZehvXdwRzc6VnvqbVozCCdFzEzqhqbW"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "devnet"
+cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+test = "npx ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
