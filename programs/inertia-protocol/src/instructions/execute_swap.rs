@@ -7,6 +7,7 @@ use solana_instructions_sysvar::{load_instruction_at_checked, ID as INSTRUCTIONS
 use crate::constants::*;
 use crate::errors::InertiaError;
 use crate::state::*;
+use crate::util::{move_lamports, split_share};
 
 /// Permissionless: callable by anyone, at any time while the escrow is
 /// Pending. Behavior branches on whether the TTL has elapsed, not on who
@@ -193,26 +194,6 @@ pub fn handler<'info>(
         .escrow
         .close(ctx.accounts.user_wallet.to_account_info())?;
 
-    Ok(())
-}
-
-fn split_share(total: u64, share_bps: u128) -> Result<u64> {
-    u64::try_from((total as u128) * share_bps / BASIS_POINTS_DIVISOR)
-        .map_err(|_| InertiaError::Overflow.into())
-}
-
-/// Direct lamport debit/credit -- the only valid way to move lamports out of
-/// a program-owned account (a CPI transfer requires the source to be owned
-/// by the System Program, which this escrow PDA is not).
-fn move_lamports<'info>(from: &AccountInfo<'info>, to: &AccountInfo<'info>, amount: u64) -> Result<()> {
-    **from.try_borrow_mut_lamports()? = from
-        .lamports()
-        .checked_sub(amount)
-        .ok_or(InertiaError::Overflow)?;
-    **to.try_borrow_mut_lamports()? = to
-        .lamports()
-        .checked_add(amount)
-        .ok_or(InertiaError::Overflow)?;
     Ok(())
 }
 

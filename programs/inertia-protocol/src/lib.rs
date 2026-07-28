@@ -4,6 +4,7 @@ pub mod constants;
 pub mod errors;
 pub mod instructions;
 pub mod state;
+pub mod util;
 
 use instructions::*;
 
@@ -29,5 +30,13 @@ pub mod inertia_protocol {
 
     pub fn self_rescue(ctx: Context<SelfRescue>) -> Result<()> {
         instructions::self_rescue::handler(ctx)
+    }
+
+    pub fn cleanup_expired_escrow(ctx: Context<CleanupExpiredEscrow>) -> Result<()> {
+        instructions::cleanup_expired_escrow::handler(ctx)
+    }
+
+    pub fn top_up_buffer(ctx: Context<TopUpBuffer>, amount: u64) -> Result<()> {
+        instructions::top_up_buffer::handler(ctx, amount)
     }
 }
