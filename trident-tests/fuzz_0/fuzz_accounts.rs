@@ -45,4 +45,14 @@ pub struct AccountAddresses {
     pub output_mint: AddressStorage,
 
     pub mint_authority: AddressStorage,
+
+    pub mint: AddressStorage,
+
+    pub dest_mint: AddressStorage,
+
+    pub dest_token_account: AddressStorage,
+
+    pub impostor: AddressStorage,
+
+    pub cleanup_caller: AddressStorage,
 }
