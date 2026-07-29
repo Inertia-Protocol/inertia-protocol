@@ -13,5 +13,5 @@ Status: early development. Not yet deployed anywhere.
 - `programs/inertia-protocol/` — the on-chain program
 - `packages/sdk/` — TypeScript integration SDK (not yet built)
 - `packages/keeper/` — open source keeper bot (not yet built)
-- `trident-tests/` — fuzz testing (not yet built)
+- `trident-tests/` — Trident fuzz tests for `self_rescue` and `cleanup_expired_escrow` (100k-iteration campaign, clean); `execute_swap` coverage not yet added
 - `docs/` — documentation (not yet built)
