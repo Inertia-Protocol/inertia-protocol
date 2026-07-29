@@ -8,6 +8,32 @@ acts within 150 slots, the user reclaims the full buffer via `self_rescue`.
 
 Status: early development. Not yet deployed anywhere.
 
+## How it works
+
+```mermaid
+flowchart TD
+    A["initialize_escrow<br/>user deposits gas buffer, delegates input_amount,<br/>escrow PDA created — status: Pending"] --> B{"Escrow is Pending<br/>anyone may act, behavior branches on elapsed slots"}
+
+    B -->|"elapsed &le; TTL_SLOTS (2 slots, ~800ms)<br/>execute_swap — ordinary attempt"| C["CPI swap via delegated authority"]
+    B -->|"elapsed &gt; TTL_SLOTS<br/>execute_swap — rescue attempt<br/>requires a Jito tip in the same tx"| D["CPI swap via delegated authority"]
+
+    C --> E{"output &ge; expected_output_amount?"}
+    D --> E
+    E -->|"no"| F["reverts — escrow still Pending"]
+    E -->|"yes, ordinary path"| G["100% of buffer refunded to user<br/>status: Executed, escrow closed"]
+    E -->|"yes, rescue path"| H["buffer split 90 / 5 / 5<br/>caller (keeper) / partner / treasury<br/>status: Executed, escrow closed"]
+
+    B -->|"elapsed &gt; SELF_RESCUE_SLOTS (150 slots)<br/>self_rescue — user_wallet only"| I["token delegation revoked<br/>full buffer + rent returned to user<br/>status: Rescued, escrow closed"]
+
+    B -->|"elapsed &gt; CLEANUP_SLOTS (300 slots)<br/>cleanup_expired_escrow — anyone"| J["10% buffer bounty to caller<br/>90% buffer + rent to user<br/>status: Expired, escrow closed"]
+```
+
+Every threshold above is a slot count, not a millisecond value — the contract compares
+`Clock::get()?.slot` against `creation_slot + N`, so it stays correct regardless of
+Solana's actual slot time. `execute_swap` is the only instruction that performs the
+underlying swap; `self_rescue` and `cleanup_expired_escrow` are pure fallbacks that
+never touch the swap program.
+
 ## Layout
 
 - `programs/inertia-protocol/` — the on-chain program
