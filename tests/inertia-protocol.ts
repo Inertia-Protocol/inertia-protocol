@@ -154,12 +154,12 @@ describe("inertia-protocol", () => {
         inputAmount: new BN(INPUT_AMOUNT),
         expectedProgramId: mockDex.programId,
         expectedDiscriminator,
-        expectedDestinationTokenAccount: userOutputAta,
         expectedOutputAmount: new BN(OUTPUT_AMOUNT),
       })
       .accounts({
         userWallet: user.publicKey,
         userInputTokenAccount: userInputAta,
+        expectedDestinationTokenAccount: userOutputAta,
         escrow,
         tokenProgram: TOKEN_PROGRAM_ID,
         systemProgram: SystemProgram.programId,
@@ -267,6 +267,58 @@ describe("inertia-protocol", () => {
       assert.include(String(err), "MissingJitoTip");
     }
     assert.isTrue(threw, "expected execute_swap to reject a tip-less rescue");
+  });
+
+  it("execute_swap rejects a rescue attempt with a tip below the minimum amount", async () => {
+    const { escrow, partnerWallet, swapIxData } = await initEscrow(6);
+    const keeper = Keypair.generate();
+    await provider.connection.confirmTransaction(
+      await provider.connection.requestAirdrop(keeper.publicKey, 1_000_000_000),
+      "confirmed"
+    );
+
+    await sleep(3000);
+
+    // Below MIN_JITO_TIP_LAMPORTS (1,000) -- present, but too small to count.
+    const tinyTipIx = SystemProgram.transfer({
+      fromPubkey: keeper.publicKey,
+      toPubkey: JITO_TIP_ACCOUNT,
+      lamports: 500,
+    });
+
+    const executeIx = await inertia.methods
+      .executeSwap(swapIxData)
+      .accounts({
+        caller: keeper.publicKey,
+        escrow,
+        userWallet: user.publicKey,
+        partnerWallet,
+        treasury: TREASURY_PUBKEY,
+        userInputTokenAccount: userInputAta,
+        destinationTokenAccount: userOutputAta,
+        swapProgram: mockDex.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
+      })
+      .remainingAccounts([
+        { pubkey: inputMint, isSigner: false, isWritable: true },
+        { pubkey: outputMint, isSigner: false, isWritable: true },
+        { pubkey: mintAuthorityPda, isSigner: false, isWritable: false },
+      ])
+      .instruction();
+
+    let threw = false;
+    try {
+      const tx = new Transaction().add(tinyTipIx).add(executeIx);
+      await provider.sendAndConfirm(tx, [keeper]);
+    } catch (err) {
+      threw = true;
+      assert.include(String(err), "MissingJitoTip");
+    }
+    assert.isTrue(
+      threw,
+      "expected execute_swap to reject a tip below the minimum amount"
+    );
   });
 
   it("execute_swap pays the keeper a rescue bounty when a Jito tip is present after TTL", async () => {

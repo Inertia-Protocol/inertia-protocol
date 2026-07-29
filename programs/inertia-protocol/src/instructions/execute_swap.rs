@@ -203,8 +203,15 @@ pub fn handler<'info>(
 }
 
 /// Checks the current transaction's top-level instructions (not CPIs -- the
-/// Instructions sysvar can't see those) for a System Program transfer naming
-/// one of the known Jito tip accounts.
+/// Instructions sysvar can't see those) for a System Program transfer of at
+/// least MIN_JITO_TIP_LAMPORTS to one of the known Jito tip accounts.
+///
+/// This cannot, and does not claim to, prove the transaction was actually
+/// routed through Jito's private bundle infrastructure rather than the
+/// public mempool -- that's a network-routing property no on-chain check can
+/// see. Checking the amount (not just presence) only closes the cheapest
+/// version of gaming this: satisfying the check with a 1-lamport transfer
+/// that costs nothing and proves nothing.
 fn jito_tip_present(instructions_sysvar: &AccountInfo) -> Result<bool> {
     let mut index = 0u16;
     loop {
@@ -217,9 +224,21 @@ fn jito_tip_present(instructions_sysvar: &AccountInfo) -> Result<bool> {
                 .accounts
                 .iter()
                 .any(|meta| JITO_TIP_ACCOUNTS.contains(&meta.pubkey))
+            && transfer_amount(&ix.data) >= MIN_JITO_TIP_LAMPORTS
         {
             return Ok(true);
         }
         index += 1;
     }
+}
+
+/// Parses lamports out of a System Program Transfer instruction's data:
+/// 4-byte LE discriminator (2 = Transfer) followed by an 8-byte LE amount.
+/// Returns 0 for anything that doesn't match that exact shape, which just
+/// means it fails the minimum-amount check rather than passing on garbage.
+fn transfer_amount(data: &[u8]) -> u64 {
+    if data.len() < 12 || data[0..4] != [2, 0, 0, 0] {
+        return 0;
+    }
+    u64::from_le_bytes(data[4..12].try_into().unwrap_or_default())
 }

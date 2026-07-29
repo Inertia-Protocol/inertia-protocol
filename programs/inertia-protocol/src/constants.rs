@@ -21,6 +21,13 @@ pub const CLEANUP_BOUNTY_BPS: u128 = 1_000;
 /// multisig-controlled treasury address before any mainnet deployment.
 pub const TREASURY_PUBKEY: Pubkey = pubkey!("AX32tpNHzJsDvYvSuuT7NCiSQy6tMMyDdvrNzGYm8tYK");
 
+/// Minimum lamports a rescue-path tip transfer must carry to satisfy the Jito
+/// check. Presence alone was gameable with a 1-lamport transfer -- this
+/// doesn't (and on-chain can't) prove the transaction actually routed through
+/// Jito's private infrastructure rather than the public mempool, but it does
+/// mean satisfying the check has a real, non-trivial cost.
+pub const MIN_JITO_TIP_LAMPORTS: u64 = 1_000;
+
 /// Official Jito tip payment accounts (mainnet-beta / devnet, as published by Jito Labs).
 /// VERIFY against https://docs.jito.wtf before deployment — these are not re-derivable on-chain
 /// and rotate only rarely, but a stale list here silently breaks the V2/V7 Jito-enforcement checks.

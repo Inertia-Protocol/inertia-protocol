@@ -21,7 +21,6 @@ pub struct InitializeEscrowParams {
     pub input_amount: u64,
     pub expected_program_id: Pubkey,
     pub expected_discriminator: [u8; 8],
-    pub expected_destination_token_account: Pubkey,
     pub expected_output_amount: u64,
 }
 
@@ -36,6 +35,15 @@ pub struct InitializeEscrow<'info> {
         constraint = user_input_token_account.owner == user_wallet.key() @ InertiaError::UnauthorizedUser,
     )]
     pub user_input_token_account: Account<'info, TokenAccount>,
+
+    /// Verified owned by user_wallet here rather than trusted as a bare
+    /// Pubkey param -- a malicious or buggy platform SDK previously could
+    /// have pointed swap output anywhere, and the user would have had no
+    /// way to know from the transaction alone.
+    #[account(
+        constraint = expected_destination_token_account.owner == user_wallet.key() @ InertiaError::UnauthorizedUser,
+    )]
+    pub expected_destination_token_account: Account<'info, TokenAccount>,
 
     #[account(
         init,
@@ -70,6 +78,15 @@ pub fn handler(ctx: Context<InitializeEscrow>, params: InitializeEscrowParams) -
     // Delegate spending authority over exactly `input_amount` to the escrow
     // PDA. Tokens never leave the user's own account -- the user can revoke
     // this independently of Inertia at any time via a plain SPL `revoke`.
+    //
+    // SDK constraint, not enforceable cheaply on-chain: SPL Token's `approve`
+    // *replaces* any existing delegation on a token account rather than
+    // adding to it. If the SDK ever creates a second escrow against the same
+    // user_input_token_account before the first one resolves, this call
+    // silently revokes the first escrow's delegation. Not fund-losing --
+    // self_rescue still recovers the first escrow's buffer regardless of
+    // delegation state -- but it strands that escrow's execute_swap path.
+    // The SDK must serialize escrows per input token account.
     token::approve(
         CpiContext::new(
             ctx.accounts.token_program.key(),
@@ -89,7 +106,8 @@ pub fn handler(ctx: Context<InitializeEscrow>, params: InitializeEscrowParams) -
     escrow.input_amount = params.input_amount;
     escrow.expected_program_id = params.expected_program_id;
     escrow.expected_discriminator = params.expected_discriminator;
-    escrow.expected_destination_token_account = params.expected_destination_token_account;
+    escrow.expected_destination_token_account =
+        ctx.accounts.expected_destination_token_account.key();
     escrow.expected_output_amount = params.expected_output_amount;
     escrow.gas_buffer_lamports = params.gas_buffer_lamports;
     escrow.creation_slot = Clock::get()?.slot;
