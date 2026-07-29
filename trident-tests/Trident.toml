@@ -1,0 +1,12 @@
+[fuzz.metrics]
+enabled = true
+
+
+[[fuzz.programs]]
+address = "8ST3LRU5gv8ijZehvXdwRzc6VnvqbVozCCdFzEzqhqbW"
+program = "../target/deploy/inertia_protocol.so"
+
+[[fuzz.programs]]
+address = "4uGiKQe9yiD9bCKX9nRrVZot9HkPKV7w8GN8acoAkYyP"
+program = "../target/deploy/mock_dex.so"
+ 
