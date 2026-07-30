@@ -279,7 +279,7 @@ describe("inertia-protocol", () => {
 
     await sleep(3000);
 
-    // Below MIN_JITO_TIP_LAMPORTS (1,000) -- present, but too small to count.
+    // Below MIN_JITO_TIP_LAMPORTS (10,000) -- present, but too small to count.
     const tinyTipIx = SystemProgram.transfer({
       fromPubkey: keeper.publicKey,
       toPubkey: JITO_TIP_ACCOUNT,

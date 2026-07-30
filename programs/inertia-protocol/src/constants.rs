@@ -22,11 +22,16 @@ pub const CLEANUP_BOUNTY_BPS: u128 = 1_000;
 pub const TREASURY_PUBKEY: Pubkey = pubkey!("AX32tpNHzJsDvYvSuuT7NCiSQy6tMMyDdvrNzGYm8tYK");
 
 /// Minimum lamports a rescue-path tip transfer must carry to satisfy the Jito
-/// check. Presence alone was gameable with a 1-lamport transfer -- this
-/// doesn't (and on-chain can't) prove the transaction actually routed through
-/// Jito's private infrastructure rather than the public mempool, but it does
-/// mean satisfying the check has a real, non-trivial cost.
-pub const MIN_JITO_TIP_LAMPORTS: u64 = 1_000;
+/// check. This doesn't (and on-chain can't) prove the transaction actually
+/// routed through Jito's private infrastructure rather than the public
+/// mempool -- it only raises the cost of faking the check.
+///
+/// Set to Jito's own documented median (50th percentile) landed-tip amount
+/// (see the tip_floor API example at docs.jito.wtf/lowlatencytxnsend/#tip-amount),
+/// not the bare 1,000-lamport protocol floor. The floor sits below even the
+/// 25th percentile of real landed tips, so it was cheaper to fake the check
+/// than to pay what an actual median bundle participant pays.
+pub const MIN_JITO_TIP_LAMPORTS: u64 = 10_000;
 
 /// Official Jito tip payment accounts (mainnet-beta / devnet, as published by Jito Labs).
 /// VERIFY against https://docs.jito.wtf before deployment — these are not re-derivable on-chain
