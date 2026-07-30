@@ -89,6 +89,17 @@ pub fn handler<'info>(
     let elapsed = clock.slot.saturating_sub(ctx.accounts.escrow.creation_slot);
     let is_rescue = elapsed > ctx.accounts.escrow.ttl_slots;
 
+    // KNOWN OPEN DESIGN QUESTION (pre-audit): is_rescue pays out 90% to the
+    // caller the instant TTL_SLOTS elapses, gated only by jito_tip_present(),
+    // which -- as documented there -- can't prove real Jito bundle routing,
+    // only that a tip was paid. A bot doesn't need genuine rescue capability
+    // to win this; it only needs to be fast and attach a tip. TTL_SLOTS=2
+    // matches real MEV-bot "needs intervention" thresholds (not arbitrary),
+    // so widening it isn't obviously the fix. The more promising direction is
+    // smoothing the payout curve so it scales with elapsed time past TTL
+    // instead of a hard cliff -- reducing the payoff for winning the race in
+    // the very first slot after TTL, where genuine-rescue evidence is
+    // weakest. Not implemented; revisit before any mainnet deployment.
     if is_rescue {
         require!(
             jito_tip_present(&ctx.accounts.instructions_sysvar.to_account_info())?,
