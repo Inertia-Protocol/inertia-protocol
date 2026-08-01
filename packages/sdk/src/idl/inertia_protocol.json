@@ -118,6 +118,19 @@
         },
         {
           "name": "treasury",
+          "docs": [
+            "",
+            "KNOWN SCALABILITY NOTE (not a security issue, not urgent): this is a",
+            "single global account written on every rescue-path execute_swap call,",
+            "across every escrow. Per-escrow PDAs don't contend with each other,",
+            "but they all contend on this write lock -- Solana's per-account CU",
+            "cap (fixed at 12M regardless of overall block capacity) bounds how",
+            "much simultaneous rescue volume can actually land in one slot. A",
+            "claim-and-sweep pattern (record an amount owed instead of",
+            "transferring directly, let the treasury claim periodically) removes",
+            "this from the hot path if it ever matters. Nowhere near that volume",
+            "today; revisit before real scale, not before mainnet specifically."
+          ],
           "writable": true,
           "address": "AX32tpNHzJsDvYvSuuT7NCiSQy6tMMyDdvrNzGYm8tYK"
         },

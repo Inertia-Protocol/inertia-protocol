@@ -1,9 +1,13 @@
-import {
-  AnchorProvider,
-  Idl,
-  Program,
-  BN,
-} from "@coral-xyz/anchor";
+// @coral-xyz/anchor ships as CommonJS -- named imports don't survive Node's
+// ESM/CJS interop for its runtime exports (this broke at actual runtime,
+// not at compile time, since tsc's type-checking doesn't verify interop
+// behavior). Default-import and destructure instead. `Idl` is a type only,
+// so it's unaffected and stays a named import.
+import anchorPkg from "@coral-xyz/anchor";
+import type { Idl } from "@coral-xyz/anchor";
+const { AnchorProvider, Program, BN } = anchorPkg;
+type AnchorProvider = InstanceType<typeof anchorPkg.AnchorProvider>;
+type Program = InstanceType<typeof anchorPkg.Program>;
 import {
   AccountMeta,
   Connection,
