@@ -89,32 +89,45 @@ pub fn handler<'info>(
     let elapsed = clock.slot.saturating_sub(ctx.accounts.escrow.creation_slot);
     let is_rescue = elapsed > ctx.accounts.escrow.ttl_slots;
 
-    // KNOWN OPEN DESIGN QUESTION (pre-audit): is_rescue pays out 90% to the
-    // caller the instant TTL_SLOTS elapses, gated only by jito_tip_present(),
-    // which -- as documented there -- can't prove real Jito bundle routing,
-    // only that a tip was paid. A bot doesn't need genuine rescue capability
-    // to win this; it only needs to be fast and attach a tip. TTL_SLOTS=2
-    // matches real MEV-bot "needs intervention" thresholds (not arbitrary),
-    // so widening it isn't obviously the fix.
+    // ANTI-SNIPE TIP REQUIREMENT: TTL_SLOTS=2 matches real MEV-bot "needs
+    // intervention" thresholds (not arbitrary), so a bot doesn't need genuine
+    // rescue capability to win the flat-tip version of this check -- only to
+    // be fast. Instead of a flat MIN_JITO_TIP_LAMPORTS, the required tip
+    // starts equal to the keeper's own reward at the earliest rescue-eligible
+    // slot -- making profit-seeking sniping mathematically break-even-or-
+    // negative right when genuine-rescue evidence is weakest -- then decays
+    // linearly back to the normal floor over TIP_DECAY_SLOTS (~6 seconds), so
+    // a real keeper can still act quickly once the ratio clears. See
+    // anti_snipe_required_tip below for the exact curve.
     //
-    // Planned fix (not implemented): instead of a flat MIN_JITO_TIP_LAMPORTS,
-    // require the tip to be >= the keeper's reward immediately after TTL --
-    // making profit-seeking sniping mathematically break-even-or-negative at
-    // the earliest possible slot -- then decay that requirement down to the
-    // normal floor over a short window (seconds, not the ~150-slot self-rescue
-    // window), so a real keeper can still act quickly once the ratio clears.
-    //
-    // Known residual risk even after that fix: it removes the PROFIT motive,
-    // not the ability to act. A griefer willing to eat a guaranteed loss (pay
+    // KNOWN RESIDUAL RISK (pre-audit): this removes the PROFIT motive, not
+    // the ability to act. A griefer willing to eat a guaranteed loss (pay
     // tip >= reward, gain nothing back) can still trigger a premature rescue
     // and redirect a specific user's buffer away from them, with zero upside
     // for the attacker. Bounded by cost -- griefing scales linearly with money
-    // spent per victim, unlike the original bug where sniping was free to
-    // repeat across every escrow -- but not eliminated. Revisit both before
-    // any mainnet deployment.
+    // spent per victim, unlike the original flat-tip bug where sniping was
+    // free to repeat across every escrow -- but not eliminated. Revisit
+    // before any mainnet deployment.
+    let keeper_share_estimate = if is_rescue {
+        Some(split_share(
+            ctx.accounts.escrow.gas_buffer_lamports,
+            KEEPER_SHARE_BPS,
+        )?)
+    } else {
+        None
+    };
+
     if is_rescue {
+        let slots_into_rescue = elapsed.saturating_sub(ctx.accounts.escrow.ttl_slots);
+        let required_tip = anti_snipe_required_tip(
+            keeper_share_estimate.unwrap_or(MIN_JITO_TIP_LAMPORTS),
+            slots_into_rescue,
+        );
         require!(
-            jito_tip_present(&ctx.accounts.instructions_sysvar.to_account_info())?,
+            jito_tip_at_least(
+                &ctx.accounts.instructions_sysvar.to_account_info(),
+                required_tip
+            )?,
             InertiaError::MissingJitoTip
         );
     }
@@ -227,15 +240,16 @@ pub fn handler<'info>(
 
 /// Checks the current transaction's top-level instructions (not CPIs -- the
 /// Instructions sysvar can't see those) for a System Program transfer of at
-/// least MIN_JITO_TIP_LAMPORTS to one of the known Jito tip accounts.
+/// least `required_amount` to one of the known Jito tip accounts.
 ///
 /// This cannot, and does not claim to, prove the transaction was actually
 /// routed through Jito's private bundle infrastructure rather than the
 /// public mempool -- that's a network-routing property no on-chain check can
-/// see. Checking the amount (not just presence) only closes the cheapest
+/// see. Checking a real amount (not just presence) only closes the cheapest
 /// version of gaming this: satisfying the check with a 1-lamport transfer
-/// that costs nothing and proves nothing.
-fn jito_tip_present(instructions_sysvar: &AccountInfo) -> Result<bool> {
+/// that costs nothing and proves nothing. `required_amount` is computed
+/// per-call by `anti_snipe_required_tip`, not a flat constant.
+fn jito_tip_at_least(instructions_sysvar: &AccountInfo, required_amount: u64) -> Result<bool> {
     let mut index = 0u16;
     loop {
         let ix = match load_instruction_at_checked(index as usize, instructions_sysvar) {
@@ -247,12 +261,30 @@ fn jito_tip_present(instructions_sysvar: &AccountInfo) -> Result<bool> {
                 .accounts
                 .iter()
                 .any(|meta| JITO_TIP_ACCOUNTS.contains(&meta.pubkey))
-            && transfer_amount(&ix.data) >= MIN_JITO_TIP_LAMPORTS
+            && transfer_amount(&ix.data) >= required_amount
         {
             return Ok(true);
         }
         index += 1;
     }
+}
+
+/// The anti-snipe required-tip curve: starts at `keeper_share` (the reward
+/// itself) at the earliest rescue-eligible slot -- so claiming the reward
+/// costs at least as much as it pays, making pure profit-seeking sniping
+/// break-even-or-negative -- and decays linearly down to
+/// MIN_JITO_TIP_LAMPORTS over TIP_DECAY_SLOTS, after which the normal floor
+/// applies. `slots_into_rescue` is 1 at the first slot where is_rescue is
+/// true (elapsed == ttl_slots + 1), matching decay_progress == 0 below.
+fn anti_snipe_required_tip(keeper_share: u64, slots_into_rescue: u64) -> u64 {
+    let decay_progress = slots_into_rescue.saturating_sub(1);
+    if keeper_share <= MIN_JITO_TIP_LAMPORTS || decay_progress >= TIP_DECAY_SLOTS {
+        return MIN_JITO_TIP_LAMPORTS;
+    }
+    let remaining_slots = TIP_DECAY_SLOTS - decay_progress;
+    let extra_above_floor = keeper_share - MIN_JITO_TIP_LAMPORTS;
+    MIN_JITO_TIP_LAMPORTS
+        + extra_above_floor.saturating_mul(remaining_slots) / TIP_DECAY_SLOTS
 }
 
 /// Parses lamports out of a System Program Transfer instruction's data:

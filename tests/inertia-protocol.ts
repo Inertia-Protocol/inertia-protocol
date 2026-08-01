@@ -33,6 +33,30 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// Matches TTL_SLOTS / TIP_DECAY_SLOTS in constants.rs. The anti-snipe
+// required tip is fully decayed to the floor once elapsed slots since
+// creation reach TTL_SLOTS + TIP_DECAY_SLOTS + 1 -- see anti_snipe_required_tip
+// in execute_swap.rs. +2 extra slots here as a safety margin past that exact
+// boundary, not the boundary itself.
+const TTL_SLOTS = 2;
+const TIP_DECAY_SLOTS = 15;
+const FULLY_DECAYED_SLOTS = TTL_SLOTS + TIP_DECAY_SLOTS + 1 + 2;
+
+// Polls real on-chain slot progress instead of guessing a wall-clock sleep
+// duration -- the local validator's actual slot-production rate isn't
+// something worth gambling test determinism on.
+async function waitUntilSlotsElapsed(
+  connection: anchor.web3.Connection,
+  fromSlot: number,
+  slotsNeeded: number
+) {
+  while (true) {
+    const currentSlot = await connection.getSlot("confirmed");
+    if (currentSlot - fromSlot > slotsNeeded) return currentSlot;
+    await sleep(400);
+  }
+}
+
 describe("inertia-protocol", () => {
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
@@ -321,6 +345,62 @@ describe("inertia-protocol", () => {
     );
   });
 
+  it("execute_swap rejects the old flat-minimum tip as a snipe attempt right after TTL", async () => {
+    // Proves the anti-snipe fix actually closed the gap it was built for:
+    // MIN_JITO_TIP_LAMPORTS alone used to be sufficient to claim a rescue the
+    // instant TTL elapsed. It no longer is -- the required tip starts at the
+    // keeper's full reward at that point and only decays down to this floor
+    // over TIP_DECAY_SLOTS, so this exact amount, this early, must now fail.
+    const { escrow, partnerWallet, swapIxData } = await initEscrow(7);
+    const keeper = Keypair.generate();
+    await provider.connection.confirmTransaction(
+      await provider.connection.requestAirdrop(keeper.publicKey, 1_000_000_000),
+      "confirmed"
+    );
+
+    await sleep(3000); // clear TTL (2 slots), but stay well inside the decay window
+
+    const oldMinimumTipIx = SystemProgram.transfer({
+      fromPubkey: keeper.publicKey,
+      toPubkey: JITO_TIP_ACCOUNT,
+      lamports: 10_000, // MIN_JITO_TIP_LAMPORTS -- would have passed pre-fix
+    });
+
+    const executeIx = await inertia.methods
+      .executeSwap(swapIxData)
+      .accounts({
+        caller: keeper.publicKey,
+        escrow,
+        userWallet: user.publicKey,
+        partnerWallet,
+        treasury: TREASURY_PUBKEY,
+        userInputTokenAccount: userInputAta,
+        destinationTokenAccount: userOutputAta,
+        swapProgram: mockDex.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
+      })
+      .remainingAccounts([
+        { pubkey: inputMint, isSigner: false, isWritable: true },
+        { pubkey: outputMint, isSigner: false, isWritable: true },
+        { pubkey: mintAuthorityPda, isSigner: false, isWritable: false },
+      ])
+      .instruction();
+
+    let threw = false;
+    try {
+      const tx = new Transaction().add(oldMinimumTipIx).add(executeIx);
+      await provider.sendAndConfirm(tx, [keeper]);
+    } catch (err) {
+      threw = true;
+      assert.include(String(err), "MissingJitoTip");
+    }
+    assert.isTrue(
+      threw,
+      "expected the old flat-minimum tip to be rejected as a snipe attempt this early"
+    );
+  });
+
   it("execute_swap pays the keeper a rescue bounty when a Jito tip is present after TTL", async () => {
     const { escrow, partnerWallet, swapIxData } = await initEscrow(3);
     const keeper = Keypair.generate();
@@ -329,7 +409,18 @@ describe("inertia-protocol", () => {
       "confirmed"
     );
 
-    await sleep(3000);
+    // The anti-snipe required tip starts at the keeper's full reward and
+    // decays to MIN_JITO_TIP_LAMPORTS over TIP_DECAY_SLOTS -- wait past that
+    // window (verified via real slot progress, not a guessed sleep duration)
+    // so the fixed 1,000,000-lamport tip below is comfortably sufficient.
+    const escrowAccountBeforeWait = await inertia.account.escrowState.fetch(
+      escrow
+    );
+    await waitUntilSlotsElapsed(
+      provider.connection,
+      escrowAccountBeforeWait.creationSlot.toNumber(),
+      FULLY_DECAYED_SLOTS
+    );
 
     // Real Jito tip accounts are constantly active and already well above
     // the rent-exempt minimum in production. A fresh local validator starts

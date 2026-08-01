@@ -33,6 +33,14 @@ pub const TREASURY_PUBKEY: Pubkey = pubkey!("AX32tpNHzJsDvYvSuuT7NCiSQy6tMMyDdvr
 /// than to pay what an actual median bundle participant pays.
 pub const MIN_JITO_TIP_LAMPORTS: u64 = 10_000;
 
+/// Slots over which the anti-snipe required-tip requirement decays from
+/// "must equal the keeper's own reward" back down to MIN_JITO_TIP_LAMPORTS.
+/// ~6 seconds at 400ms slots: long enough that profit-seeking sniping is
+/// break-even-or-negative at the earliest possible rescue slot, short enough
+/// that a genuine keeper isn't waiting anywhere near the 150-slot
+/// self-rescue window to act profitably. See execute_swap's design note.
+pub const TIP_DECAY_SLOTS: u64 = 15;
+
 /// Official Jito tip payment accounts (mainnet-beta / devnet, as published by Jito Labs).
 /// VERIFY against https://docs.jito.wtf before deployment — these are not re-derivable on-chain
 /// and rotate only rarely, but a stale list here silently breaks the V2/V7 Jito-enforcement checks.
