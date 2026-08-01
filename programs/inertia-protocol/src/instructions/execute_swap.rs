@@ -95,11 +95,23 @@ pub fn handler<'info>(
     // only that a tip was paid. A bot doesn't need genuine rescue capability
     // to win this; it only needs to be fast and attach a tip. TTL_SLOTS=2
     // matches real MEV-bot "needs intervention" thresholds (not arbitrary),
-    // so widening it isn't obviously the fix. The more promising direction is
-    // smoothing the payout curve so it scales with elapsed time past TTL
-    // instead of a hard cliff -- reducing the payoff for winning the race in
-    // the very first slot after TTL, where genuine-rescue evidence is
-    // weakest. Not implemented; revisit before any mainnet deployment.
+    // so widening it isn't obviously the fix.
+    //
+    // Planned fix (not implemented): instead of a flat MIN_JITO_TIP_LAMPORTS,
+    // require the tip to be >= the keeper's reward immediately after TTL --
+    // making profit-seeking sniping mathematically break-even-or-negative at
+    // the earliest possible slot -- then decay that requirement down to the
+    // normal floor over a short window (seconds, not the ~150-slot self-rescue
+    // window), so a real keeper can still act quickly once the ratio clears.
+    //
+    // Known residual risk even after that fix: it removes the PROFIT motive,
+    // not the ability to act. A griefer willing to eat a guaranteed loss (pay
+    // tip >= reward, gain nothing back) can still trigger a premature rescue
+    // and redirect a specific user's buffer away from them, with zero upside
+    // for the attacker. Bounded by cost -- griefing scales linearly with money
+    // spent per victim, unlike the original bug where sniping was free to
+    // repeat across every escrow -- but not eliminated. Revisit both before
+    // any mainnet deployment.
     if is_rescue {
         require!(
             jito_tip_present(&ctx.accounts.instructions_sysvar.to_account_info())?,
