@@ -49,5 +49,6 @@ note in `execute_swap.rs` for the full reasoning and what's still open pre-audit
 - [`packages/keeper/`](packages/keeper/README.md): reference open-source keeper bot. Discovers pending escrows, only acts once the anti-snipe curve makes it genuinely profitable, swap-execution is pluggable (mock-dex today)
 - `trident-tests/`: Trident fuzz tests for `self_rescue` and `cleanup_expired_escrow` (100k-iteration campaign, clean); `execute_swap` coverage not yet added
 - `docs/`: documentation (not yet built)
+- `site/`: public-facing landing page (Next.js). The hero is a live, honest dramatization of the actual mechanism, not decorative copy; run it with `npm run dev --prefix site`
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) for how to actually build, test, and fuzz this locally.
