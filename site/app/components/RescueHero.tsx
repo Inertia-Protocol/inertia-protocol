@@ -4,6 +4,26 @@ import { useEffect, useRef, useState } from "react";
 
 type Stage = "moving" | "stalled" | "rescued";
 
+const STAGE_COLOR: Record<Stage, string> = {
+  moving: "var(--accent)",
+  stalled: "var(--danger)",
+  rescued: "var(--success)",
+};
+
+const STAGE_LABEL: Record<Stage, string> = {
+  moving: "pending",
+  stalled: "stalled",
+  rescued: "rescued",
+};
+
+function Spark({ color }: { color: string }) {
+  return (
+    <svg width="14" height="18" viewBox="0 0 14 18" fill="none">
+      <path d="M8 0L0 10.5H5.5L5 18L14 6.5H8L8 0Z" fill={color} />
+    </svg>
+  );
+}
+
 export default function RescueHero() {
   const [pct, setPct] = useState(0);
   const [keeperPct, setKeeperPct] = useState(38);
@@ -45,7 +65,7 @@ export default function RescueHero() {
           window.clearInterval(tickInterval);
           rescue();
         }
-      }, 500);
+      }, 550);
       timers.current.push(tickInterval);
     }
 
@@ -59,7 +79,7 @@ export default function RescueHero() {
         setKeeperPct(clamped);
         if (p >= 100) {
           window.clearInterval(endInterval);
-          const resetTimeout = window.setTimeout(run, 2200);
+          const resetTimeout = window.setTimeout(run, 2400);
           timers.current.push(resetTimeout);
         }
       }, 30);
@@ -70,44 +90,37 @@ export default function RescueHero() {
     return clearTimers;
   }, []);
 
-  const badgeColor =
-    stage === "stalled"
-      ? "var(--danger)"
-      : stage === "rescued"
-        ? "var(--success)"
-        : "var(--accent)";
-
-  const badgeLabel =
-    stage === "stalled" ? "stalled" : stage === "rescued" ? "rescued" : "pending";
+  const color = STAGE_COLOR[stage];
 
   return (
-    <div style={{ maxWidth: 480, width: "100%" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 32 }}>
-        <span style={{ fontSize: 13, color: "var(--text-muted)", letterSpacing: 1 }}>
-          WALLET
-        </span>
-        <span style={{ fontSize: 13, color: "var(--text-muted)", letterSpacing: 1 }}>
-          DESTINATION
-        </span>
-      </div>
-
+    <div style={{ width: "100%", maxWidth: 560 }}>
       <div
         style={{
-          position: "relative",
-          height: 2,
-          background: "var(--border)",
-          marginBottom: 28,
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 40,
         }}
       >
+        <span className="eyebrow">Wallet</span>
+        <span className="eyebrow">Destination</span>
+      </div>
+
+      <div style={{ position: "relative", marginBottom: 36 }}>
+        <div
+          style={{
+            height: 1,
+            background: "var(--border-strong)",
+          }}
+        />
         <div
           style={{
             position: "absolute",
             left: 0,
             top: 0,
-            height: "100%",
+            height: 1,
             width: `${pct}%`,
-            background: badgeColor,
-            transition: "background 0.3s",
+            background: color,
+            transition: "background-color 0.4s ease",
           }}
         />
         <div
@@ -115,27 +128,26 @@ export default function RescueHero() {
             position: "absolute",
             top: "50%",
             left: `${pct}%`,
-            width: 10,
-            height: 10,
-            marginTop: -5,
-            marginLeft: -5,
+            width: 9,
+            height: 9,
+            marginTop: -4.5,
+            marginLeft: -4.5,
             borderRadius: "50%",
-            background: badgeColor,
-            transition: "background 0.3s",
+            background: color,
+            transition: "background-color 0.4s ease",
+            boxShadow: stage === "stalled" ? `0 0 0 5px ${"var(--accent-dim)"}` : "none",
           }}
         />
         {stage === "rescued" && (
           <div
             style={{
               position: "absolute",
-              top: -26,
+              top: -24,
               left: `${keeperPct}%`,
-              marginLeft: -8,
-              fontSize: 15,
-              color: "var(--accent)",
+              marginLeft: -7,
             }}
           >
-            ⚡
+            <Spark color="var(--success)" />
           </div>
         )}
       </div>
@@ -145,22 +157,32 @@ export default function RescueHero() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: 12,
-          fontFamily: "var(--font-mono)",
-          fontSize: 13,
+          gap: 16,
         }}
       >
         <span
           style={{
-            padding: "4px 12px",
-            border: `1px solid ${badgeColor}`,
-            color: badgeColor,
-            letterSpacing: 1,
+            fontFamily: "var(--font-mono)",
+            fontSize: 12,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            padding: "6px 14px",
+            border: `1px solid ${color}`,
+            color,
+            transition: "color 0.4s ease, border-color 0.4s ease",
           }}
         >
-          {badgeLabel}
+          {STAGE_LABEL[stage]}
         </span>
-        <span style={{ color: "var(--text-muted)" }}>slot +{slot}</span>
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 12,
+            color: "var(--text-muted)",
+          }}
+        >
+          slot +{slot}
+        </span>
       </div>
     </div>
   );

@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 const bodoniModa = Bodoni_Moda({
   variable: "--font-bodoni",
   subsets: ["latin"],
-  weight: ["600", "700", "800"],
+  weight: ["500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
