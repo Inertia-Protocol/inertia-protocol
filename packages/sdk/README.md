@@ -1,12 +1,12 @@
 # @inertia-protocol/sdk
 
-TypeScript client SDK for [Inertia Protocol](../../README.md) — wraps all five
+TypeScript client SDK for [Inertia Protocol](../../README.md). Wraps all five
 on-chain instructions and, most importantly, mirrors the contract's anti-snipe
 tip-decay math client-side so callers don't have to reimplement it by hand.
 
 ## Install
 
-Not published to npm yet — used as a workspace-local package within this
+Not published to npm yet. Used as a workspace-local package within this
 monorepo. From the repo root:
 
 ```bash
@@ -62,7 +62,7 @@ await inertia.executeSwap(
 `executeSwap()` (and `buildExecuteSwapInstructions()` if you want the raw
 instructions instead of an auto-sent transaction) fetches the escrow's live
 state, checks whether this is a rescue attempt, and if so computes the exact
-tip required by the contract's decay curve right now — starting at the
+tip required by the contract's decay curve right now, starting at the
 keeper's own reward at the earliest eligible slot, decaying to the normal
 floor over `TIP_DECAY_SLOTS`. See [`antiSnipe.ts`](./src/antiSnipe.ts) for the
 implementation and the top-level [README](../../README.md#how-it-works) for
@@ -71,12 +71,12 @@ why this exists.
 ## One thing to know about signing
 
 Most methods (`selfRescue`, `cleanupExpiredEscrow`, `topUpBuffer`,
-`initializeEscrow`) sign with the `AnchorProvider`'s own wallet — there's no
+`initializeEscrow`) sign with the `AnchorProvider`'s own wallet; there's no
 separate signer parameter. `cleanupExpiredEscrow` is permissionless on-chain
 (anyone can call it), so if you want to call it as a different identity than
 whatever your main provider is configured with, construct a second
 `InertiaClient` with a provider built from that identity's own wallet. This
-is verified to work — see `test/integration.check.mjs`.
+is verified to work, see `test/integration.check.mjs`.
 
 `executeSwap` is the one method that does accept an explicit signers array,
 since it's the instruction most likely to be called by a keeper bot managing

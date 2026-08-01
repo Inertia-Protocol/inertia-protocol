@@ -1,7 +1,7 @@
 # Developing Inertia Protocol
 
-This covers what's actually needed to build, test, and fuzz this project —
-written from the real gotchas hit getting it working, not a generic template.
+This covers what's actually needed to build, test, and fuzz this project.
+It's written from the real gotchas hit getting it working, not a generic template.
 If you're on Windows, read the WSL note first; several of the steps below
 assume it.
 
@@ -9,11 +9,11 @@ assume it.
 
 - **Rust** (stable) + the Solana BPF/SBF target, installed via the Solana CLI installer.
 - **Solana CLI**.
-- **Anchor CLI** — this project uses **1.1.2 from the otter-sec/anchor fork**,
+- **Anchor CLI**. This project uses **1.1.2 from the otter-sec/anchor fork**,
   not the mainline `0.31.x` releases. The API differs in places (e.g.
   `CpiContext::new()` takes a `Pubkey`, not an `AccountInfo`). `avm install`
   will get you the right version if pointed at that fork.
-- **[surfpool](https://docs.surfpool.run/)** — used instead of
+- **[surfpool](https://docs.surfpool.run/)**, used instead of
   `solana-test-validator`. Run it with `--offline` for isolated local testing;
   without that flag it clones mainnet accounts by default.
 - **[Trident](https://github.com/Ackee-Blockchain/trident)** CLI, for the fuzz
@@ -39,7 +39,7 @@ This builds both `inertia_protocol` and `mock_dex` (a test-only swap program
 used by the integration tests), and generates the IDL + TypeScript types into
 the gitignored `target/` directory.
 
-## Running the test suite — the surfpool gotcha
+## Running the test suite: the surfpool gotcha
 
 **`anchor test` alone will fail** with "Unsupported program id" or "Program is
 not deployed." This is a known race condition between Anchor's automatic
@@ -51,7 +51,7 @@ step:
 ```bash
 # 1. Start surfpool detached, so it survives the shell session ending.
 #    (Plain `surfpool start &` gets killed when a one-shot command session
-#    exits — use setsid + disown to actually detach it.)
+#    exits, so use setsid + disown to actually detach it.)
 setsid nohup surfpool start --offline > /tmp/surfpool.log 2>&1 < /dev/null &
 disown
 
@@ -77,7 +77,7 @@ anchor test --skip-local-validator --skip-deploy --skip-build
 pkill -9 -f 'surfpool start'
 ```
 
-This is the standard pattern used throughout this project's history — reuse
+This is the standard pattern used throughout this project's history. Reuse
 it verbatim for any manual testing against a local validator, including the
 SDK's integration test (below).
 
@@ -131,6 +131,6 @@ npm run test:integration # real end-to-end check -- needs surfpool running
 ```
 
 If you change the SDK's source, rebuild it (`npm run build` inside
-`packages/sdk`) before rerunning the keeper's tests — the keeper depends on
+`packages/sdk`) before rerunning the keeper's tests. The keeper depends on
 the SDK's compiled `dist/` output via a symlink, so a stale SDK build means
 the keeper is testing against stale logic.

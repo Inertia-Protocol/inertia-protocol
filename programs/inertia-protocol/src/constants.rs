@@ -17,7 +17,7 @@ pub const TREASURY_SHARE_BPS: u128 = 500;
 pub const CLEANUP_BOUNTY_BPS: u128 = 1_000;
 
 /// Protocol treasury. Hardcoded and immutable post-deployment by design (Sec. 4, Instruction 6).
-/// PLACEHOLDER — devnet-only keypair generated for this build. Must be replaced with a real,
+/// PLACEHOLDER: devnet-only keypair generated for this build. Must be replaced with a real,
 /// multisig-controlled treasury address before any mainnet deployment.
 pub const TREASURY_PUBKEY: Pubkey = pubkey!("AX32tpNHzJsDvYvSuuT7NCiSQy6tMMyDdvrNzGYm8tYK");
 
@@ -42,7 +42,7 @@ pub const MIN_JITO_TIP_LAMPORTS: u64 = 10_000;
 pub const TIP_DECAY_SLOTS: u64 = 15;
 
 /// Official Jito tip payment accounts (mainnet-beta / devnet, as published by Jito Labs).
-/// VERIFY against https://docs.jito.wtf before deployment — these are not re-derivable on-chain
+/// VERIFY against https://docs.jito.wtf before deployment. These are not re-derivable on-chain
 /// and rotate only rarely, but a stale list here silently breaks the V2/V7 Jito-enforcement checks.
 pub const JITO_TIP_ACCOUNTS: [Pubkey; 8] = [
     pubkey!("96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5"),
