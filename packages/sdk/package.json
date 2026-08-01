@@ -1,0 +1,26 @@
+{
+  "name": "@inertia-protocol/sdk",
+  "version": "0.1.0",
+  "description": "TypeScript client SDK for Inertia Protocol -- a Solana program that rescues stalled swaps via keeper bot economics.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src/idl"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node test/antiSnipe.check.mjs",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.32.1",
+    "@solana/spl-token": "^0.4.9",
+    "@solana/web3.js": "^1.95.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}

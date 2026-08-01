@@ -1,0 +1,679 @@
+{
+  "address": "8ST3LRU5gv8ijZehvXdwRzc6VnvqbVozCCdFzEzqhqbW",
+  "metadata": {
+    "name": "inertia_protocol",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Trustless JIT escrow that rescues stalled Solana transactions via keeper bot acceleration"
+  },
+  "instructions": [
+    {
+      "name": "cleanup_expired_escrow",
+      "discriminator": [
+        197,
+        214,
+        51,
+        163,
+        114,
+        209,
+        68,
+        130
+      ],
+      "accounts": [
+        {
+          "name": "caller",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "escrow",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  115,
+                  99,
+                  114,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "escrow.user_wallet",
+                "account": "EscrowState"
+              },
+              {
+                "kind": "account",
+                "path": "escrow.nonce",
+                "account": "EscrowState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_wallet",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "execute_swap",
+      "discriminator": [
+        56,
+        182,
+        124,
+        215,
+        155,
+        140,
+        157,
+        102
+      ],
+      "accounts": [
+        {
+          "name": "caller",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "escrow",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  115,
+                  99,
+                  114,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "escrow.user_wallet",
+                "account": "EscrowState"
+              },
+              {
+                "kind": "account",
+                "path": "escrow.nonce",
+                "account": "EscrowState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_wallet",
+          "writable": true
+        },
+        {
+          "name": "partner_wallet",
+          "writable": true
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "address": "AX32tpNHzJsDvYvSuuT7NCiSQy6tMMyDdvrNzGYm8tYK"
+        },
+        {
+          "name": "user_input_token_account",
+          "writable": true
+        },
+        {
+          "name": "destination_token_account",
+          "writable": true
+        },
+        {
+          "name": "swap_program",
+          "docs": [
+            "actual instruction invoked is further constrained by the discriminator",
+            "check and the post-CPI output-amount check in the handler"
+          ]
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "instructions_sysvar",
+          "address": "Sysvar1nstructions1111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "swap_instruction_data",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "initialize_escrow",
+      "discriminator": [
+        243,
+        160,
+        77,
+        153,
+        11,
+        92,
+        48,
+        209
+      ],
+      "accounts": [
+        {
+          "name": "user_wallet",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user_input_token_account",
+          "writable": true
+        },
+        {
+          "name": "expected_destination_token_account",
+          "docs": [
+            "Verified owned by user_wallet here rather than trusted as a bare",
+            "Pubkey param -- a malicious or buggy platform SDK previously could",
+            "have pointed swap output anywhere, and the user would have had no",
+            "way to know from the transaction alone."
+          ]
+        },
+        {
+          "name": "escrow",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  115,
+                  99,
+                  114,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user_wallet"
+              },
+              {
+                "kind": "arg",
+                "path": "params.nonce"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "InitializeEscrowParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "self_rescue",
+      "discriminator": [
+        122,
+        22,
+        229,
+        109,
+        41,
+        88,
+        207,
+        19
+      ],
+      "accounts": [
+        {
+          "name": "user_wallet",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "escrow"
+          ]
+        },
+        {
+          "name": "escrow",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  115,
+                  99,
+                  114,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "escrow.user_wallet",
+                "account": "EscrowState"
+              },
+              {
+                "kind": "account",
+                "path": "escrow.nonce",
+                "account": "EscrowState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_input_token_account",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "top_up_buffer",
+      "discriminator": [
+        112,
+        8,
+        168,
+        233,
+        111,
+        232,
+        177,
+        16
+      ],
+      "accounts": [
+        {
+          "name": "contributor",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "escrow",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  115,
+                  99,
+                  114,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "escrow.user_wallet",
+                "account": "EscrowState"
+              },
+              {
+                "kind": "account",
+                "path": "escrow.nonce",
+                "account": "EscrowState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "EscrowState",
+      "discriminator": [
+        19,
+        90,
+        148,
+        111,
+        55,
+        130,
+        229,
+        108
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "SwapExecuted",
+      "discriminator": [
+        150,
+        166,
+        26,
+        225,
+        28,
+        89,
+        38,
+        79
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "BufferBelowMinimum",
+      "msg": "Gas buffer is below the dynamic minimum required"
+    },
+    {
+      "code": 6001,
+      "name": "NotPending",
+      "msg": "Escrow is not in Pending status"
+    },
+    {
+      "code": 6002,
+      "name": "TtlNotElapsed",
+      "msg": "TTL has not yet elapsed"
+    },
+    {
+      "code": 6003,
+      "name": "SelfRescueWindowNotElapsed",
+      "msg": "Self-rescue window has not yet elapsed"
+    },
+    {
+      "code": 6004,
+      "name": "CleanupWindowNotElapsed",
+      "msg": "Cleanup window has not yet elapsed"
+    },
+    {
+      "code": 6005,
+      "name": "MissingJitoTip",
+      "msg": "Jito tip instruction not found in transaction"
+    },
+    {
+      "code": 6006,
+      "name": "MissingSwapInstruction",
+      "msg": "Expected swap instruction not found in transaction"
+    },
+    {
+      "code": 6007,
+      "name": "SwapDestinationMismatch",
+      "msg": "Swap instruction destination account does not match escrow record"
+    },
+    {
+      "code": 6008,
+      "name": "KeeperSignerMismatch",
+      "msg": "Signer does not match the keeper wallet submitting acceleration"
+    },
+    {
+      "code": 6009,
+      "name": "UnauthorizedUser",
+      "msg": "Only the original user wallet may call this instruction"
+    },
+    {
+      "code": 6010,
+      "name": "Overflow",
+      "msg": "Arithmetic overflow"
+    },
+    {
+      "code": 6011,
+      "name": "FeeSplitMismatch",
+      "msg": "Fee split does not sum to total buffer"
+    },
+    {
+      "code": 6012,
+      "name": "InvalidSwapInstructionData",
+      "msg": "Supplied swap instruction data is missing or has the wrong discriminator"
+    },
+    {
+      "code": 6013,
+      "name": "OutputBelowMinimum",
+      "msg": "Swap output was below the escrow's minimum acceptable amount"
+    }
+  ],
+  "types": [
+    {
+      "name": "EscrowState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user_wallet",
+            "docs": [
+              "Original trader. Only this key may call `self_rescue`, and it is the",
+              "mandatory destination for swap output (see V6, wrapper contract exploit)."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "partner_wallet",
+            "docs": [
+              "Integration partner's treasury. Receives 5% of the buffer when a swap",
+              "is executed after the TTL (a genuine keeper rescue)."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "user_input_token_account",
+            "docs": [
+              "User's own token account holding the trade input. Never moved out of",
+              "user custody directly -- the escrow only ever holds delegated spending",
+              "authority over it (SPL Token `approve`), revocable independently of",
+              "this program at any time via a plain `revoke` instruction."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "input_amount",
+            "docs": [
+              "Amount delegated and expected to be swapped."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "expected_program_id",
+            "docs": [
+              "Program ID the swap CPI must be executed against."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "expected_discriminator",
+            "docs": [
+              "Anchor 8-byte instruction discriminator identifying which instruction",
+              "on `expected_program_id` to invoke."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "expected_destination_token_account",
+            "docs": [
+              "The token account that must receive swap output -- the canonical ATA",
+              "for (user_wallet, output_mint), computed off-chain and fixed at init."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "expected_output_amount",
+            "docs": [
+              "Minimum acceptable output amount (slippage floor). The swap CPI's",
+              "result is checked against this before any funds are released."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "gas_buffer_lamports",
+            "docs": [
+              "Lamports held as bounty/refund buffer (separate from the account's",
+              "rent-exempt reserve)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "creation_slot",
+            "type": "u64"
+          },
+          {
+            "name": "ttl_slots",
+            "docs": [
+              "Hardcoded to TTL_SLOTS at init; stored for on-chain readability of the",
+              "liveness check rather than re-reading the constant."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "nonce",
+            "docs": [
+              "Client-generated value used only to make the PDA unique per (user,",
+              "escrow). Not a signature -- see build log for why original_tx_signature",
+              "can't be used as a seed or stored as a field."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "EscrowStatus"
+              }
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EscrowStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Pending"
+          },
+          {
+            "name": "Executed"
+          },
+          {
+            "name": "Rescued"
+          },
+          {
+            "name": "Expired"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InitializeEscrowParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "nonce",
+            "docs": [
+              "Client-generated, used only to make the PDA unique per (user_wallet, escrow)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "gas_buffer_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "dynamic_minimum_lamports",
+            "docs": [
+              "Computed off-chain by the SDK from real-time p95 priority fees (Sec. 3,",
+              "Dynamic Buffer Sizing). This is a sanity/UX guard, not an adversarial",
+              "check: the same party constructing this transaction supplies both this",
+              "value and `gas_buffer_lamports`, so it protects against SDK bugs",
+              "under-funding the escrow, not against a malicious counterparty."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "partner_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "input_amount",
+            "type": "u64"
+          },
+          {
+            "name": "expected_program_id",
+            "type": "pubkey"
+          },
+          {
+            "name": "expected_discriminator",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "expected_output_amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SwapExecuted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "escrow",
+            "type": "pubkey"
+          },
+          {
+            "name": "user_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "was_rescue",
+            "type": "bool"
+          },
+          {
+            "name": "caller",
+            "type": "pubkey"
+          },
+          {
+            "name": "output_amount",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}
