@@ -1,0 +1,28 @@
+{
+  "name": "@inertia-protocol/keeper",
+  "version": "0.1.0",
+  "description": "Reference open-source keeper bot for Inertia Protocol -- watches for stalled swaps and races to rescue them once it's actually profitable to do so.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "inertia-keeper": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "test": "node test/profitability.check.mjs",
+    "test:integration": "node test/integration.check.mjs",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@inertia-protocol/sdk": "file:../sdk",
+    "@coral-xyz/anchor": "^0.32.1",
+    "@solana/spl-token": "^0.4.9",
+    "@solana/web3.js": "^1.95.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "@types/node": "^22.5.0"
+  }
+}

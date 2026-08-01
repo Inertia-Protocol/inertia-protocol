@@ -46,7 +46,7 @@ note in `execute_swap.rs` for the full reasoning and what's still open pre-audit
 
 - `programs/inertia-protocol/` — the on-chain program
 - [`packages/sdk/`](packages/sdk/README.md) — TypeScript client SDK: wraps all five instructions, mirrors the anti-snipe tip math client-side so `executeSwap()` auto-computes and attaches the correct tip
-- `packages/keeper/` — open source keeper bot (not yet built)
+- [`packages/keeper/`](packages/keeper/README.md) — reference open-source keeper bot: discovers pending escrows, only acts once the anti-snipe curve makes it genuinely profitable, swap-execution is pluggable (mock-dex today)
 - `trident-tests/` — Trident fuzz tests for `self_rescue` and `cleanup_expired_escrow` (100k-iteration campaign, clean); `execute_swap` coverage not yet added
 - `docs/` — documentation (not yet built)
 

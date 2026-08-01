@@ -117,3 +117,20 @@ change an instruction's accounts or args in the Rust program, rebuild
 ```bash
 cp target/idl/inertia_protocol.json packages/sdk/src/idl/inertia_protocol.json
 ```
+
+## The keeper bot package
+
+Depends on the SDK via a `file:../sdk` reference, so build the SDK first:
+
+```bash
+cd packages/sdk && npm install && npm run build
+cd ../keeper && npm install && npm run build
+npm test                 # pure profitability-math check, no external dependencies
+npm run test:integration # real end-to-end check -- needs surfpool running
+                          # with both programs deployed, per the steps above
+```
+
+If you change the SDK's source, rebuild it (`npm run build` inside
+`packages/sdk`) before rerunning the keeper's tests — the keeper depends on
+the SDK's compiled `dist/` output via a symlink, so a stale SDK build means
+the keeper is testing against stale logic.

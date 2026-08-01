@@ -1,0 +1,86 @@
+{
+  "address": "4uGiKQe9yiD9bCKX9nRrVZot9HkPKV7w8GN8acoAkYyP",
+  "metadata": {
+    "name": "mock_dex",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Minimal swap-shaped program for local integration testing of execute_swap's CPI relay. Not part of the protocol."
+  },
+  "instructions": [
+    {
+      "name": "swap",
+      "discriminator": [
+        248,
+        198,
+        158,
+        145,
+        225,
+        117,
+        135,
+        200
+      ],
+      "accounts": [
+        {
+          "name": "source",
+          "writable": true
+        },
+        {
+          "name": "destination",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "source_mint",
+          "writable": true
+        },
+        {
+          "name": "output_mint",
+          "writable": true
+        },
+        {
+          "name": "mint_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  105,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "amount_in",
+          "type": "u64"
+        },
+        {
+          "name": "amount_out",
+          "type": "u64"
+        }
+      ]
+    }
+  ]
+}
