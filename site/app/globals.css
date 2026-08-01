@@ -1,11 +1,11 @@
 :root {
-  --bg: #000000;
-  --surface: #0c0c0b;
-  --border: #1f1f1d;
-  --border-strong: #35342f;
-  --text-primary: #f2f1ea;
-  --text-secondary: #9a9990;
-  --text-muted: #58574f;
+  --bg: #262f38;
+  --surface: #2c3640;
+  --border: #3a444f;
+  --border-strong: #4c5763;
+  --text-primary: #ece7d6;
+  --text-secondary: #b4b2a4;
+  --text-muted: #7d7f78;
   --accent: #e0a63a;
   --accent-dim: #3a2f16;
   --danger: #cc5c42;
@@ -14,17 +14,6 @@
   --font-serif: var(--font-bodoni), Georgia, serif;
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 24px;
-  --space-6: 32px;
-  --space-7: 48px;
-  --space-8: 64px;
-  --space-9: 96px;
-  --space-10: 144px;
 
   --container: 1080px;
   --edge: 32px;
@@ -64,8 +53,8 @@ a {
 }
 
 ::selection {
-  background: var(--accent-dim);
-  color: var(--accent);
+  background: #ece7d6;
+  color: #262f38;
 }
 
 .wrap {
@@ -73,12 +62,6 @@ a {
   margin: 0 auto;
   padding-left: var(--edge);
   padding-right: var(--edge);
-}
-
-.hairline {
-  height: 1px;
-  background: var(--border);
-  border: none;
 }
 
 .eyebrow {
@@ -89,8 +72,151 @@ a {
   color: var(--text-muted);
 }
 
+/* Landing */
+
+.landing {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #262f38;
+  overflow: hidden;
+}
+
+.landing::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("/blueprint.jpg") center / cover no-repeat;
+  animation: drift 90s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.landing::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(236, 231, 214, 0.04) 0,
+      rgba(236, 231, 214, 0.04) 1px,
+      transparent 1px,
+      transparent 56px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(236, 231, 214, 0.04) 0,
+      rgba(236, 231, 214, 0.04) 1px,
+      transparent 1px,
+      transparent 56px
+    ),
+    radial-gradient(
+      ellipse 62% 68% at 50% 46%,
+      rgba(38, 47, 56, 0.94) 0%,
+      rgba(38, 47, 56, 0.82) 55%,
+      rgba(38, 47, 56, 0.3) 100%
+    );
+}
+
+.landing > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes drift {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
+}
+
+.landing-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 40px;
+}
+
+.wordmark {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-primary);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 44px;
+}
+
+.navlink {
+  font-size: 15px;
+  color: rgba(236, 231, 214, 0.85);
+  transition: color 0.15s ease;
+}
+
+.navlink:hover {
+  color: #ece7d6;
+}
+
+.landing-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px var(--edge);
+}
+
+.btn {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 500;
+  color: #1f2830;
+  background: #f6f1e1;
+  border: 1px solid #f6f1e1;
+  padding: 14px 34px;
+  border-radius: 2px;
+  transition: background-color 0.15s ease;
+}
+
+.btn:hover {
+  background: #ffffff;
+  border-color: #ffffff;
+}
+
+.footnote {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(236, 231, 214, 0.38);
+  text-align: center;
+  padding: 28px var(--edge) 32px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing::before {
+    animation: none;
+  }
+}
+
 @media (max-width: 640px) {
   :root {
     --edge: 20px;
+  }
+
+  .landing-header {
+    padding: 22px 20px;
+  }
+
+  .nav {
+    gap: 28px;
   }
 }

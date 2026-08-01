@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   turbopack: {
     // Pin explicitly -- an unrelated lockfile in the user's broader Documents
     // folder (outside this repo) otherwise gets picked up by Next's root
