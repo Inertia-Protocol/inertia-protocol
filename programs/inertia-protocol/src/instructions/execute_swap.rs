@@ -18,10 +18,12 @@ use crate::util::{move_lamports, split_share};
 ///   the caller was -- there is nothing in it for a keeper to call this
 ///   early, which is what keeps this branch self-defending.
 /// - After TTL: this is a genuine rescue. Requires a Jito tip instruction
-///   present in the same transaction; on success the buffer splits 90/5/5
-///   (caller/partner/treasury). The caller IS the keeper -- there's no
-///   separate stored keeper field to redirect, since payment goes straight
-///   to whichever key actually signed this instruction.
+///   present in the same transaction, in an amount that starts at the
+///   keeper's own reward and decays to a floor over TIP_DECAY_SLOTS (see the
+///   ANTI-SNIPE design note in the handler below); on success the buffer
+///   splits 90/5/5 (caller/partner/treasury). The caller IS the keeper --
+///   there's no separate stored keeper field to redirect, since payment goes
+///   straight to whichever key actually signed this instruction.
 #[derive(Accounts)]
 pub struct ExecuteSwap<'info> {
     #[account(mut)]
@@ -45,6 +47,17 @@ pub struct ExecuteSwap<'info> {
 
     #[account(mut, address = TREASURY_PUBKEY)]
     /// CHECK: pinned via address constraint to the hardcoded treasury constant
+    ///
+    /// KNOWN SCALABILITY NOTE (not a security issue, not urgent): this is a
+    /// single global account written on every rescue-path execute_swap call,
+    /// across every escrow. Per-escrow PDAs don't contend with each other,
+    /// but they all contend on this write lock -- Solana's per-account CU
+    /// cap (fixed at 12M regardless of overall block capacity) bounds how
+    /// much simultaneous rescue volume can actually land in one slot. A
+    /// claim-and-sweep pattern (record an amount owed instead of
+    /// transferring directly, let the treasury claim periodically) removes
+    /// this from the hot path if it ever matters. Nowhere near that volume
+    /// today; revisit before real scale, not before mainnet specifically.
     pub treasury: UncheckedAccount<'info>,
 
     #[account(mut, address = escrow.user_input_token_account)]
