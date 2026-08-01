@@ -13,6 +13,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "node test/antiSnipe.check.mjs",
+    "test:integration": "node test/integration.check.mjs",
     "clean": "rm -rf dist"
   },
   "dependencies": {
