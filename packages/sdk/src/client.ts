@@ -284,28 +284,55 @@ export class InertiaClient {
   async getEscrow(escrow: PublicKey): Promise<EscrowStateAccount | null> {
     try {
       const raw = await (this.program.account as any).escrowState.fetch(escrow);
-      return {
-        userWallet: raw.userWallet,
-        partnerWallet: raw.partnerWallet,
-        userInputTokenAccount: raw.userInputTokenAccount,
-        inputAmount: BigInt(raw.inputAmount.toString()),
-        expectedProgramId: raw.expectedProgramId,
-        expectedDiscriminator: Uint8Array.from(raw.expectedDiscriminator),
-        expectedDestinationTokenAccount: raw.expectedDestinationTokenAccount,
-        expectedOutputAmount: BigInt(raw.expectedOutputAmount.toString()),
-        gasBufferLamports: BigInt(raw.gasBufferLamports.toString()),
-        creationSlot: BigInt(raw.creationSlot.toString()),
-        ttlSlots: BigInt(raw.ttlSlots.toString()),
-        nonce: BigInt(raw.nonce.toString()),
-        status: raw.status,
-        bump: raw.bump,
-      };
+      return this.mapEscrowAccount(raw);
     } catch {
       return null;
     }
   }
 
+  /**
+   * Fetches every escrow account for this program. Uses Anchor's own
+   * discriminator-filtered .all() rather than a hand-rolled memcmp offset
+   * filter -- a wrong byte offset into EscrowState's layout would fail
+   * silently (empty or wrong results, not an error), which isn't a risk
+   * worth taking for what's a small account count at this project's current
+   * scale. A server-side status filter would be the real optimization once
+   * escrow volume is large enough to matter; not needed yet.
+   */
+  async getAllEscrows(): Promise<Array<{ pubkey: PublicKey; account: EscrowStateAccount }>> {
+    const raw = await (this.program.account as any).escrowState.all();
+    return raw.map((entry: any) => ({
+      pubkey: entry.publicKey,
+      account: this.mapEscrowAccount(entry.account),
+    }));
+  }
+
+  /** Convenience wrapper: getAllEscrows() filtered to status === Pending client-side. */
+  async getPendingEscrows(): Promise<Array<{ pubkey: PublicKey; account: EscrowStateAccount }>> {
+    const all = await this.getAllEscrows();
+    return all.filter((e) => (e.account.status as any).pending !== undefined);
+  }
+
   async getCurrentSlot(): Promise<bigint> {
     return BigInt(await this.connection.getSlot());
+  }
+
+  private mapEscrowAccount(raw: any): EscrowStateAccount {
+    return {
+      userWallet: raw.userWallet,
+      partnerWallet: raw.partnerWallet,
+      userInputTokenAccount: raw.userInputTokenAccount,
+      inputAmount: BigInt(raw.inputAmount.toString()),
+      expectedProgramId: raw.expectedProgramId,
+      expectedDiscriminator: Uint8Array.from(raw.expectedDiscriminator),
+      expectedDestinationTokenAccount: raw.expectedDestinationTokenAccount,
+      expectedOutputAmount: BigInt(raw.expectedOutputAmount.toString()),
+      gasBufferLamports: BigInt(raw.gasBufferLamports.toString()),
+      creationSlot: BigInt(raw.creationSlot.toString()),
+      ttlSlots: BigInt(raw.ttlSlots.toString()),
+      nonce: BigInt(raw.nonce.toString()),
+      status: raw.status,
+      bump: raw.bump,
+    };
   }
 }
