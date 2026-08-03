@@ -180,4 +180,5 @@ contract change that doesn't exist yet.
 
 - Root [README's "Generic CPI account ordering"](../README.md#generic-cpi-account-ordering) section -- the contract-side story of why this design exists.
 - [`packages/sdk/README.md`](../packages/sdk/README.md) -- full SDK usage, including a worked `OrcaSwapBuilder` example.
+- [`docs/INSTRUCTIONS.md`](./INSTRUCTIONS.md) -- every instruction's accounts, params, and exact errors, for when you need more than the two calls shown above.
 - [`docs/RISK_REGISTER.md`](./RISK_REGISTER.md) -- every known open risk and limitation, kept current.

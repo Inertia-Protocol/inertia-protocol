@@ -50,6 +50,8 @@ npm run build
 export INERTIA_KEEPER_RPC_URL="http://127.0.0.1:8899"   # defaults to this if unset
 export INERTIA_KEEPER_KEYPAIR="/path/to/keeper-keypair.json"  # required, standard Solana CLI format
 export INERTIA_KEEPER_MIN_PROFIT_LAMPORTS="1000"          # optional, defaults shown
+export INERTIA_KEEPER_POLL_INTERVAL_MS="10000"            # optional, defaults to 2000 -- raise this on a shared public RPC to avoid 429s
+export INERTIA_KEEPER_ORCA_WHIRLPOOL="<pool address>"      # optional -- set to enable the real Orca path alongside mock-dex
 
 npm start
 ```
@@ -57,8 +59,25 @@ npm start
 It runs a continuous scan loop: fetch every pending escrow, check
 profitability for each, attempt a rescue on the profitable ones, repeat.
 Losing a race to another keeper (the escrow closes between the scan and the
-attempt landing) is treated as an expected, routine outcome in a
-permissionless system, not an error, and the bot just moves on.
+attempt landing) is logged as `LOST-RACE`, not an error -- it's an expected,
+routine outcome in a permissionless system, and the bot just moves on.
+
+### Devnet, against a real pool, continuously
+
+`npm run devnet:keeper` runs the bot pre-configured against a specific
+real, live Orca Whirlpool on devnet (env vars baked into the script in
+`package.json` -- edit them there for a different pool or keypair).
+`npm run devnet:activity` runs [`devnet-orca-live.mjs`](./devnet-orca-live.mjs),
+which creates a real escrow against that same pool on a timer and
+deliberately never executes it, leaving genuine work for the keeper to
+discover and rescue on its own over real elapsed time -- this is what a
+sustained, unattended proof run actually looks like, not a handful of
+one-shot demo transactions. Run both at once, from separate keypairs, and
+you get real concurrent keeper competition: see the root README's live
+dual-keeper race result for what that actually produced.
+[`cleanup-stale.mjs`](./cleanup-stale.mjs) permissionlessly closes any
+escrow left over from an earlier run via `cleanup_expired_escrow`, so old
+test escrows don't sit around getting retried forever.
 
 ## Testing
 
