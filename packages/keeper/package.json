@@ -13,18 +13,18 @@
     "start": "node dist/index.js",
     "test": "node test/profitability.check.mjs",
     "test:integration": "node test/integration.check.mjs",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "devnet:keeper": "INERTIA_KEEPER_RPC_URL=https://api.devnet.solana.com INERTIA_KEEPER_KEYPAIR=$HOME/.config/solana/keeper-id.json INERTIA_KEEPER_ORCA_WHIRLPOOL=122n8Kvj9htD1AkY8JWJBMngzA8rWkWDPa26vPpuiU7z INERTIA_KEEPER_POLL_INTERVAL_MS=10000 node dist/index.js",
+    "devnet:activity": "DEVNET_PAYER=$HOME/.config/solana/id.json node devnet-orca-live.mjs"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.32.1",
     "@inertia-protocol/sdk": "file:../sdk",
     "@meteora-ag/dlmm": "^1.9.14",
-    "@orca-so/common-sdk": "^0.7.1",
-    "@orca-so/whirlpools-sdk": "^0.21.0",
     "@raydium-io/raydium-sdk-v2": "^0.2.60-alpha",
     "@solana/spl-token": "^0.4.9",
     "@solana/web3.js": "^1.95.3",
-    "decimal.js": "^10.6.0"
+    "bn.js": "^5.2.1"
   },
   "devDependencies": {
     "@types/bn.js": "^5.2.0",

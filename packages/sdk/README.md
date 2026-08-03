@@ -68,6 +68,60 @@ floor over `TIP_DECAY_SLOTS`. See [`antiSnipe.ts`](./src/antiSnipe.ts) for the
 implementation and the top-level [README](../../README.md#how-it-works) for
 why this exists.
 
+See [`docs/INTEGRATION_GUIDE.md`](../../docs/INTEGRATION_GUIDE.md) for the
+full pattern behind these builders (why each one forces `isSigner: false` on
+the escrow's own entry, how to verify a new DEX uses 8-byte Anchor
+discriminators before attempting it, and the account-substitution class of
+bug the Meteora integration caught) -- this section is just the quick-start.
+
+## Real DEX swap-builder clients
+
+`executeSwap` needs `swapInstructionData` and `remainingAccounts` for
+whatever DEX program the escrow targets -- the SDK ships real, working
+builders for the three DEXes this protocol has proven against, so an
+integrator doesn't have to work out each program's account ordering and
+CPI-signer quirks from scratch:
+
+- [`OrcaSwapBuilder`](./src/orcaSwap.ts) -- [Orca Whirlpools](https://www.orca.so/), concentrated liquidity
+- [`RaydiumCpmmSwapBuilder`](./src/raydiumCpmmSwap.ts) -- Raydium's CPMM, flat constant-product
+- [`MeteoraDlmmSwapBuilder`](./src/meteoraDlmmSwap.ts) -- Meteora's DLMM, discrete-bin liquidity
+
+```ts
+import { InertiaClient, OrcaSwapBuilder } from "@inertia-protocol/sdk";
+
+const orca = new OrcaSwapBuilder(provider);
+const { swapInstructionData, remainingAccounts } = await orca.buildSwap({
+  whirlpoolAddress /* the specific pool to swap through */,
+  userInputTokenAccount: account.userInputTokenAccount,
+  destinationTokenAccount: account.expectedDestinationTokenAccount,
+  inputMint /* looked up from userInputTokenAccount, not stored on the escrow */,
+  inputAmount: account.inputAmount,
+  escrowAuthority: escrow,
+});
+
+await inertia.executeSwap(
+  { caller: wallet.publicKey, escrow, swapInstructionData, remainingAccounts, swapProgram: orca.programId },
+  [wallet.payer]
+);
+```
+
+Each builder independently handles the same real constraint: the underlying
+DEX SDK's own instruction builder marks the swap authority (the escrow PDA)
+as `isSigner: true`, assuming ordinary wallet use -- a PDA has no keypair and
+cannot sign at the outer-transaction level, only `execute_swap`'s own
+`invoke_signed` can grant that during the CPI itself. Each builder forces
+that flag back to `false` before returning, so the outer transaction Solana
+actually verifies never wrongly claims the escrow can sign for itself. See
+[`docs/RISK_REGISTER.md`](../../docs/RISK_REGISTER.md) for the specific,
+real bugs each of these three integrations turned up (a Raydium
+discriminator incompatibility ruled out rather than worked around, and a
+Meteora account-substitution bug this pattern caught directly), and for
+what's still explicitly out of scope (Raydium's classic, pre-Anchor AMM).
+
+This package's `packages/keeper` reference bot is just one consumer of
+these same exports, not a special case -- any platform or independent
+keeper operator can import them directly.
+
 ## One thing to know about signing
 
 Most methods (`selfRescue`, `cleanupExpiredEscrow`, `topUpBuffer`,

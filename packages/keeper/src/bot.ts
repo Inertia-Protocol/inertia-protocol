@@ -2,8 +2,9 @@ import anchorPkg from "@coral-xyz/anchor";
 const { AnchorProvider, Wallet } = anchorPkg;
 type AnchorProvider = InstanceType<typeof anchorPkg.AnchorProvider>;
 
-import { Connection, PublicKey } from "@solana/web3.js";
-import { InertiaClient, EscrowStateAccount } from "@inertia-protocol/sdk";
+import { AccountMeta, Connection, PublicKey } from "@solana/web3.js";
+import { getAccount } from "@solana/spl-token";
+import { InertiaClient, EscrowStateAccount, OrcaSwapBuilder } from "@inertia-protocol/sdk";
 
 import { KeeperConfig } from "./config.js";
 import { checkProfitability } from "./profitability.js";
@@ -20,13 +21,16 @@ export interface RescueAttemptResult {
 export class KeeperBot {
   public readonly client: InertiaClient;
   public readonly provider: AnchorProvider;
-  private readonly swapBuilder: MockDexSwapBuilder;
+  private readonly connection: Connection;
+  private readonly mockDexBuilder: MockDexSwapBuilder;
+  private readonly orcaBuilder: OrcaSwapBuilder;
 
   constructor(private readonly config: KeeperConfig) {
-    const connection = new Connection(config.rpcUrl, "confirmed");
-    this.provider = new AnchorProvider(connection, new Wallet(config.keypair), {});
+    this.connection = new Connection(config.rpcUrl, "confirmed");
+    this.provider = new AnchorProvider(this.connection, new Wallet(config.keypair), {});
     this.client = new InertiaClient(this.provider);
-    this.swapBuilder = new MockDexSwapBuilder(this.provider);
+    this.mockDexBuilder = new MockDexSwapBuilder(this.provider);
+    this.orcaBuilder = new OrcaSwapBuilder(this.provider);
   }
 
   /**
@@ -53,7 +57,11 @@ export class KeeperBot {
     account: EscrowStateAccount,
     currentSlot: bigint
   ): Promise<RescueAttemptResult> {
-    if (!account.expectedProgramId.equals(this.swapBuilder.programId)) {
+    const isMockDex = account.expectedProgramId.equals(this.mockDexBuilder.programId);
+    const isOrca =
+      this.config.orcaWhirlpoolAddress !== undefined &&
+      account.expectedProgramId.equals(this.orcaBuilder.programId);
+    if (!isMockDex && !isOrca) {
       return { escrow, outcome: "skipped-unknown-swap-program" };
     }
 
@@ -77,12 +85,37 @@ export class KeeperBot {
     }
 
     try {
-      const { swapInstructionData, remainingAccounts } = await this.swapBuilder.buildSwap({
-        userInputTokenAccount: account.userInputTokenAccount,
-        destinationTokenAccount: account.expectedDestinationTokenAccount,
-        inputAmount: account.inputAmount,
-        outputAmount: account.expectedOutputAmount,
-      });
+      let swapInstructionData: Buffer;
+      let remainingAccounts: AccountMeta[];
+      let swapProgram: PublicKey;
+
+      if (isOrca) {
+        // The escrow stores the token accounts involved but not their
+        // mints -- looked up for real here, the same way MockDexSwapBuilder
+        // already does for its own accounts, not assumed or cached.
+        const inputAccountInfo = await getAccount(this.connection, account.userInputTokenAccount);
+        const built = await this.orcaBuilder.buildSwap({
+          whirlpoolAddress: this.config.orcaWhirlpoolAddress!,
+          userInputTokenAccount: account.userInputTokenAccount,
+          destinationTokenAccount: account.expectedDestinationTokenAccount,
+          inputMint: inputAccountInfo.mint,
+          inputAmount: account.inputAmount,
+          escrowAuthority: escrow,
+        });
+        swapInstructionData = built.swapInstructionData;
+        remainingAccounts = built.remainingAccounts;
+        swapProgram = this.orcaBuilder.programId;
+      } else {
+        const built = await this.mockDexBuilder.buildSwap({
+          userInputTokenAccount: account.userInputTokenAccount,
+          destinationTokenAccount: account.expectedDestinationTokenAccount,
+          inputAmount: account.inputAmount,
+          outputAmount: account.expectedOutputAmount,
+        });
+        swapInstructionData = built.swapInstructionData;
+        remainingAccounts = built.remainingAccounts;
+        swapProgram = this.mockDexBuilder.programId;
+      }
 
       const signature = await this.client.executeSwap(
         {
@@ -90,7 +123,7 @@ export class KeeperBot {
           escrow,
           swapInstructionData,
           remainingAccounts,
-          swapProgram: this.swapBuilder.programId,
+          swapProgram,
         },
         [this.config.keypair]
       );

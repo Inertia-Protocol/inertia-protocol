@@ -28,8 +28,7 @@ const require = createRequire(import.meta.url);
 const dlmmPkg = require("@meteora-ag/dlmm");
 const DLMM = dlmmPkg.default ?? dlmmPkg;
 const { ActivationType, StrategyType, deriveCustomizablePermissionlessLbPair, LBCLMM_PROGRAM_IDS } = dlmmPkg;
-import { InertiaClient, deriveEscrowPda } from "@inertia-protocol/sdk";
-import { MeteoraDlmmSwapBuilder } from "./dist/meteoraDlmmSwap.js";
+import { InertiaClient, deriveEscrowPda, MeteoraDlmmSwapBuilder } from "@inertia-protocol/sdk";
 
 const INERTIA_PROGRAM_ID = new PublicKey("8ST3LRU5gv8ijZehvXdwRzc6VnvqbVozCCdFzEzqhqbW");
 

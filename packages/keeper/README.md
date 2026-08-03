@@ -13,19 +13,23 @@ protocol's bounty economics is to make it worthwhile for other, independently
 operated keepers to run their own bots and compete; this one exists so the
 mechanism has a working example from day one.
 
-**The swap-execution part is explicitly pluggable.** Two builders exist
-today: [`mockDexSwap.ts`](./src/mockDexSwap.ts), for this repo's own
-test-only swap program, and [`orcaSwap.ts`](./src/orcaSwap.ts), a real
-client against [Orca Whirlpools](https://www.orca.so/) -- an
-independently-built, externally-audited Solana DEX, not something written
-for this project. The Orca builder is what proved `execute_swap`'s CPI relay
-actually works against a real program's real account layout, not just one
-built to match Inertia's own assumptions (see the root README's "Generic CPI
-account ordering" section). Jupiter's own aggregator API was evaluated and
-ruled out for this integration specifically: its convenience wrapper inserts
-setup instructions (SOL wrapping, ATA creation) that require the real end
-user's signature, which doesn't exist at rescue time. Whirlpools' raw `swap`
-instruction has no such requirement, which is what made it a viable target.
+**The swap-execution part is explicitly pluggable.** This package keeps only
+[`mockDexSwap.ts`](./src/mockDexSwap.ts), for this repo's own test-only swap
+program. The three real DEX clients this bot can also drive --
+[`OrcaSwapBuilder`](../sdk/src/orcaSwap.ts), `RaydiumCpmmSwapBuilder`, and
+`MeteoraDlmmSwapBuilder` -- now live in
+[`@inertia-protocol/sdk`](../sdk/README.md) instead of here, so any platform
+or keeper operator can reuse them directly without depending on this
+reference bot's internals. This bot's `bot.ts` is just one consumer of that
+same public SDK surface, not a special, hardcoded case. The Orca builder is
+what first proved `execute_swap`'s CPI relay actually works against a real
+program's real account layout, not just one built to match Inertia's own
+assumptions (see the root README's "Generic CPI account ordering" section).
+Jupiter's own aggregator API was evaluated and ruled out for this
+integration specifically: its convenience wrapper inserts setup instructions
+(SOL wrapping, ATA creation) that require the real end user's signature,
+which doesn't exist at rescue time. Whirlpools' raw `swap` instruction has no
+such requirement, which is what made it a viable target.
 
 ## How it decides whether to act
 

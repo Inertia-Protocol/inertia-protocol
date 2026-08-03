@@ -23,8 +23,7 @@ import {
 import BN from "bn.js";
 import { readFileSync } from "node:fs";
 import { makeCreateCpmmPoolInInstruction, getCreatePoolKeys } from "@raydium-io/raydium-sdk-v2";
-import { InertiaClient, deriveEscrowPda } from "@inertia-protocol/sdk";
-import { RaydiumCpmmSwapBuilder } from "./dist/raydiumCpmmSwap.js";
+import { InertiaClient, deriveEscrowPda, RaydiumCpmmSwapBuilder } from "@inertia-protocol/sdk";
 
 const INERTIA_PROGRAM_ID = new PublicKey("8ST3LRU5gv8ijZehvXdwRzc6VnvqbVozCCdFzEzqhqbW");
 const CPMM_PROGRAM_ID = new PublicKey("DRaycpLY18LhpbydsBWbVJtxpNv9oXPgjRSfpF2bWpYb");

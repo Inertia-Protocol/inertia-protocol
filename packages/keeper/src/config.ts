@@ -1,4 +1,4 @@
-import { Keypair } from "@solana/web3.js";
+import { Keypair, PublicKey } from "@solana/web3.js";
 import { readFileSync } from "node:fs";
 
 export interface KeeperConfig {
@@ -10,6 +10,14 @@ export interface KeeperConfig {
   estimatedTxFeeLamports: bigint;
   /** Minimum net profit (after tip and estimated fees) required to bother attempting a rescue. */
   minProfitLamports: bigint;
+  /**
+   * Fixed Orca Whirlpool this bot knows how to rescue against, if set. The
+   * escrow account has no stored pool address (only the token accounts
+   * involved), and a given mint pair can have multiple real Whirlpools at
+   * different tick spacings -- this bot targets exactly one, configured
+   * up front, rather than attempting pool discovery.
+   */
+  orcaWhirlpoolAddress?: PublicKey;
 }
 
 const DEFAULTS = {
@@ -42,6 +50,9 @@ export function loadConfigFromEnv(): KeeperConfig {
     minProfitLamports: process.env.INERTIA_KEEPER_MIN_PROFIT_LAMPORTS
       ? BigInt(process.env.INERTIA_KEEPER_MIN_PROFIT_LAMPORTS)
       : DEFAULTS.minProfitLamports,
+    orcaWhirlpoolAddress: process.env.INERTIA_KEEPER_ORCA_WHIRLPOOL
+      ? new PublicKey(process.env.INERTIA_KEEPER_ORCA_WHIRLPOOL)
+      : undefined,
   };
 }
 

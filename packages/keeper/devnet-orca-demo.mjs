@@ -21,8 +21,7 @@ import {
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import { readFileSync } from "node:fs";
-import { InertiaClient } from "@inertia-protocol/sdk";
-import { OrcaSwapBuilder } from "./dist/orcaSwap.js";
+import { InertiaClient, OrcaSwapBuilder } from "@inertia-protocol/sdk";
 
 const INERTIA_PROGRAM_ID = new PublicKey("8ST3LRU5gv8ijZehvXdwRzc6VnvqbVozCCdFzEzqhqbW");
 // Real, live devnet Whirlpool: SOL / 9Z8PQAgh6paeYZdHfrBBsfaj4AeqNJWS8H1G19nTBB94,

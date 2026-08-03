@@ -23,10 +23,13 @@ async function main() {
           );
         } else if (result.outcome === "error") {
           console.error(`ERROR on ${result.escrow.toBase58()}:`, result.error);
+        } else if (result.outcome === "lost-race") {
+          console.log(`LOST-RACE on ${result.escrow.toBase58()} -- another keeper claimed it first`);
         }
-        // skipped-* and lost-race outcomes are expected, routine states in
-        // a permissionless system -- not logged by default to keep normal
-        // operation quiet.
+        // skipped-* outcomes fire on essentially every pending escrow every
+        // poll cycle -- logged would be pure noise. lost-race is rare and
+        // meaningful (it only fires after an actual execute_swap attempt
+        // was beaten), so it's worth surfacing.
       }
     } catch (err) {
       console.error("Scan pass failed:", err);
