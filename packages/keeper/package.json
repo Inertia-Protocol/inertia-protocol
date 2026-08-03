@@ -20,11 +20,13 @@
     "@inertia-protocol/sdk": "file:../sdk",
     "@orca-so/common-sdk": "^0.7.1",
     "@orca-so/whirlpools-sdk": "^0.21.0",
+    "@raydium-io/raydium-sdk-v2": "^0.2.60-alpha",
     "@solana/spl-token": "^0.4.9",
     "@solana/web3.js": "^1.95.3",
     "decimal.js": "^10.6.0"
   },
   "devDependencies": {
+    "@types/bn.js": "^5.2.0",
     "@types/node": "^22.5.0",
     "typescript": "^5.5.4"
   }
