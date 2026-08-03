@@ -1,7 +1,7 @@
 import Mark from "./components/Mark";
 
 const GITHUB_URL = "https://github.com/Inertia-Protocol/inertia-protocol";
-const DOCS_URL = `${GITHUB_URL}#readme`;
+const DOCS_URL = "/docs";
 
 export default function Home() {
   return (
