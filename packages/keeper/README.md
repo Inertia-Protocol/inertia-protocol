@@ -13,12 +13,19 @@ protocol's bounty economics is to make it worthwhile for other, independently
 operated keepers to run their own bots and compete; this one exists so the
 mechanism has a working example from day one.
 
-**The swap-execution part is explicitly pluggable.** Today, this bot only
-knows how to construct swaps for `mock-dex`, the only swap program that
-exists in this repo so far (see [`mockDexSwap.ts`](./src/mockDexSwap.ts)). A
-production keeper would swap that piece out for a real aggregator client
-(Jupiter or similar), quoting a route that clears `expectedOutputAmount` and
-using that route's own instruction data instead.
+**The swap-execution part is explicitly pluggable.** Two builders exist
+today: [`mockDexSwap.ts`](./src/mockDexSwap.ts), for this repo's own
+test-only swap program, and [`orcaSwap.ts`](./src/orcaSwap.ts), a real
+client against [Orca Whirlpools](https://www.orca.so/) -- an
+independently-built, externally-audited Solana DEX, not something written
+for this project. The Orca builder is what proved `execute_swap`'s CPI relay
+actually works against a real program's real account layout, not just one
+built to match Inertia's own assumptions (see the root README's "Generic CPI
+account ordering" section). Jupiter's own aggregator API was evaluated and
+ruled out for this integration specifically: its convenience wrapper inserts
+setup instructions (SOL wrapping, ATA creation) that require the real end
+user's signature, which doesn't exist at rescue time. Whirlpools' raw `swap`
+instruction has no such requirement, which is what made it a viable target.
 
 ## How it decides whether to act
 

@@ -30,4 +30,6 @@ pub enum InertiaError {
     InvalidSwapInstructionData,
     #[msg("Swap output was below the escrow's minimum acceptable amount")]
     OutputBelowMinimum,
+    #[msg("A required account (input token account, destination token account, or the real token program) was not found in the supplied swap accounts")]
+    MissingRequiredSwapAccount,
 }

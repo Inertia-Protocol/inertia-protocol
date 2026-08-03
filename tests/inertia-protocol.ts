@@ -228,7 +228,16 @@ describe("inertia-protocol", () => {
         tokenProgram: TOKEN_PROGRAM_ID,
         instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
       })
+      // Full CPI account list for mock-dex's own Swap accounts struct, in
+      // its real order (source, destination, authority, token_program,
+      // source_mint, output_mint, mint_authority) -- execute_swap no longer
+      // hardcodes a prefix, so this now has to be the complete list any
+      // target program actually needs, not just the extras beyond one.
       .remainingAccounts([
+        { pubkey: userInputAta, isSigner: false, isWritable: true },
+        { pubkey: userOutputAta, isSigner: false, isWritable: true },
+        { pubkey: escrow, isSigner: false, isWritable: false },
+        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
         { pubkey: inputMint, isSigner: false, isWritable: true },
         { pubkey: outputMint, isSigner: false, isWritable: true },
         { pubkey: mintAuthorityPda, isSigner: false, isWritable: false },
@@ -324,7 +333,16 @@ describe("inertia-protocol", () => {
         tokenProgram: TOKEN_PROGRAM_ID,
         instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
       })
+      // Full CPI account list for mock-dex's own Swap accounts struct, in
+      // its real order (source, destination, authority, token_program,
+      // source_mint, output_mint, mint_authority) -- execute_swap no longer
+      // hardcodes a prefix, so this now has to be the complete list any
+      // target program actually needs, not just the extras beyond one.
       .remainingAccounts([
+        { pubkey: userInputAta, isSigner: false, isWritable: true },
+        { pubkey: userOutputAta, isSigner: false, isWritable: true },
+        { pubkey: escrow, isSigner: false, isWritable: false },
+        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
         { pubkey: inputMint, isSigner: false, isWritable: true },
         { pubkey: outputMint, isSigner: false, isWritable: true },
         { pubkey: mintAuthorityPda, isSigner: false, isWritable: false },
@@ -380,7 +398,16 @@ describe("inertia-protocol", () => {
         tokenProgram: TOKEN_PROGRAM_ID,
         instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
       })
+      // Full CPI account list for mock-dex's own Swap accounts struct, in
+      // its real order (source, destination, authority, token_program,
+      // source_mint, output_mint, mint_authority) -- execute_swap no longer
+      // hardcodes a prefix, so this now has to be the complete list any
+      // target program actually needs, not just the extras beyond one.
       .remainingAccounts([
+        { pubkey: userInputAta, isSigner: false, isWritable: true },
+        { pubkey: userOutputAta, isSigner: false, isWritable: true },
+        { pubkey: escrow, isSigner: false, isWritable: false },
+        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
         { pubkey: inputMint, isSigner: false, isWritable: true },
         { pubkey: outputMint, isSigner: false, isWritable: true },
         { pubkey: mintAuthorityPda, isSigner: false, isWritable: false },
@@ -447,7 +474,16 @@ describe("inertia-protocol", () => {
         tokenProgram: TOKEN_PROGRAM_ID,
         instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
       })
+      // Full CPI account list for mock-dex's own Swap accounts struct, in
+      // its real order (source, destination, authority, token_program,
+      // source_mint, output_mint, mint_authority) -- execute_swap no longer
+      // hardcodes a prefix, so this now has to be the complete list any
+      // target program actually needs, not just the extras beyond one.
       .remainingAccounts([
+        { pubkey: userInputAta, isSigner: false, isWritable: true },
+        { pubkey: userOutputAta, isSigner: false, isWritable: true },
+        { pubkey: escrow, isSigner: false, isWritable: false },
+        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
         { pubkey: inputMint, isSigner: false, isWritable: true },
         { pubkey: outputMint, isSigner: false, isWritable: true },
         { pubkey: mintAuthorityPda, isSigner: false, isWritable: false },
@@ -497,6 +533,10 @@ describe("inertia-protocol", () => {
           instructionsSysvar: SYSVAR_INSTRUCTIONS_PUBKEY,
         })
         .remainingAccounts([
+          { pubkey: userInputAta, isSigner: false, isWritable: true },
+          { pubkey: userOutputAta, isSigner: false, isWritable: true },
+          { pubkey: escrow, isSigner: false, isWritable: false },
+          { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
           { pubkey: inputMint, isSigner: false, isWritable: true },
           { pubkey: outputMint, isSigner: false, isWritable: true },
           { pubkey: mintAuthorityPda, isSigner: false, isWritable: false },

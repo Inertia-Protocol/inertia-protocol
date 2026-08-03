@@ -155,31 +155,57 @@ pub fn handler<'info>(
         &[bump],
     ];
 
-    let mut account_metas = vec![
-        AccountMeta::new(ctx.accounts.user_input_token_account.key(), false),
-        AccountMeta::new(ctx.accounts.destination_token_account.key(), false),
-        AccountMeta::new_readonly(ctx.accounts.escrow.key(), true),
-        AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
-    ];
-    let mut account_infos = vec![
-        ctx.accounts.user_input_token_account.to_account_info(),
-        ctx.accounts.destination_token_account.to_account_info(),
-        ctx.accounts.escrow.to_account_info(),
-        ctx.accounts.token_program.to_account_info(),
-        // invoke_signed looks up the target program in this slice, not just
-        // in the instruction's own AccountMeta list -- omitting it produces
-        // "Unsupported program id" even though the account isn't referenced
-        // by the instruction's account metas at all.
-        ctx.accounts.swap_program.to_account_info(),
-    ];
+    // GENERIC CPI ACCOUNT ORDERING: the entire target-program account list
+    // comes from remaining_accounts, in whatever order that specific program
+    // actually requires -- Solana matches CPI accounts positionally, not by
+    // name, so a hardcoded prefix only ever worked for a program (like this
+    // repo's own mock-dex) built to match Inertia's assumed order. Real,
+    // independently-built swap programs (Orca Whirlpools, Raydium, etc.)
+    // each have their own natural account layout unrelated to Inertia's.
+    //
+    // This still enforces the same guarantees the old fixed prefix gave for
+    // free: the three security-critical accounts (the escrow's real input
+    // token account, its real expected destination, and the real SPL Token
+    // program -- all three already validated by Anchor's own typed
+    // constraints above) must each appear somewhere in remaining_accounts,
+    // not merely be trusted by position. The escrow's own entry additionally
+    // gets is_signer forced to true wherever it appears, since only
+    // invoke_signed's PDA seeds can actually grant that -- remaining_accounts
+    // as submitted in the transaction has no way to mark a PDA as a signer.
+    let user_input_key = ctx.accounts.user_input_token_account.key();
+    let destination_key = ctx.accounts.destination_token_account.key();
+    let token_program_key = ctx.accounts.token_program.key();
+    let escrow_key = ctx.accounts.escrow.key();
+
+    require!(
+        ctx.remaining_accounts.iter().any(|a| a.key() == user_input_key),
+        InertiaError::MissingRequiredSwapAccount
+    );
+    require!(
+        ctx.remaining_accounts.iter().any(|a| a.key() == destination_key),
+        InertiaError::MissingRequiredSwapAccount
+    );
+    require!(
+        ctx.remaining_accounts.iter().any(|a| a.key() == token_program_key),
+        InertiaError::MissingRequiredSwapAccount
+    );
+
+    let mut account_metas = Vec::with_capacity(ctx.remaining_accounts.len());
+    let mut account_infos = Vec::with_capacity(ctx.remaining_accounts.len() + 1);
     for acc in ctx.remaining_accounts.iter() {
+        let is_escrow = acc.key() == escrow_key;
         account_metas.push(AccountMeta {
             pubkey: acc.key(),
-            is_signer: acc.is_signer,
+            is_signer: is_escrow || acc.is_signer,
             is_writable: acc.is_writable,
         });
         account_infos.push(acc.clone());
     }
+    // invoke_signed looks up the target program in this slice, not just in
+    // the instruction's own AccountMeta list -- omitting it produces
+    // "Unsupported program id" even though the account isn't referenced by
+    // the instruction's account metas at all.
+    account_infos.push(ctx.accounts.swap_program.to_account_info());
 
     let swap_ix = Instruction {
         program_id: ctx.accounts.swap_program.key(),

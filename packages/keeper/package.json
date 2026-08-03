@@ -16,13 +16,16 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@inertia-protocol/sdk": "file:../sdk",
     "@coral-xyz/anchor": "^0.32.1",
+    "@inertia-protocol/sdk": "file:../sdk",
+    "@orca-so/common-sdk": "^0.7.1",
+    "@orca-so/whirlpools-sdk": "^0.21.0",
     "@solana/spl-token": "^0.4.9",
-    "@solana/web3.js": "^1.95.3"
+    "@solana/web3.js": "^1.95.3",
+    "decimal.js": "^10.6.0"
   },
   "devDependencies": {
-    "typescript": "^5.5.4",
-    "@types/node": "^22.5.0"
+    "@types/node": "^22.5.0",
+    "typescript": "^5.5.4"
   }
 }
