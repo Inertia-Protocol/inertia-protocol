@@ -191,6 +191,17 @@ a {
   border-color: #ffffff;
 }
 
+.btn-ghost {
+  color: var(--text-primary);
+  background: transparent;
+  border-color: rgba(236, 231, 214, 0.35);
+}
+
+.btn-ghost:hover {
+  background: rgba(236, 231, 214, 0.08);
+  border-color: rgba(236, 231, 214, 0.6);
+}
+
 .footnote {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -199,6 +210,130 @@ a {
   color: rgba(236, 231, 214, 0.38);
   text-align: center;
   padding: 28px var(--edge) 32px;
+}
+
+/* Proof section -- plain grid background, no engine blueprint */
+
+.proof {
+  position: relative;
+  background: var(--bg) url("/grid.jpg") center / cover repeat;
+  border-top: 1px solid var(--border);
+  padding: 96px 0 104px;
+}
+
+.proof-title {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: clamp(28px, 3.6vw, 42px);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin-bottom: 18px;
+}
+
+.proof-lede {
+  color: var(--text-secondary);
+  font-size: 16px;
+  line-height: 1.75;
+  max-width: 720px;
+  margin-bottom: 40px;
+}
+
+.proof-status {
+  border: 1px solid var(--border-strong);
+  background: rgba(44, 54, 64, 0.72);
+  border-radius: 4px;
+  padding: 18px 22px;
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.proof-status-row {
+  display: flex;
+  gap: 18px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.proof-status-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  flex: 0 0 72px;
+}
+
+.proof-mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent);
+  word-break: break-all;
+}
+
+a.proof-mono:hover {
+  text-decoration: underline;
+}
+
+.proof-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 44px;
+}
+
+.proof-card {
+  display: block;
+  border: 1px solid var(--border);
+  background: rgba(44, 54, 64, 0.72);
+  border-radius: 4px;
+  padding: 20px 22px;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.proof-card:hover {
+  border-color: var(--accent);
+  background: rgba(44, 54, 64, 0.92);
+}
+
+.proof-card-label {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+
+.proof-card-detail {
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+.proof-card-tx {
+  font-size: 12px;
+}
+
+.proof-links {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 44px;
+}
+
+.proof-honesty {
+  color: var(--text-muted);
+  font-size: 13.5px;
+  line-height: 1.7;
+  max-width: 680px;
+}
+
+.proof-inline-link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
