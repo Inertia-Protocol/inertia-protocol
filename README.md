@@ -1,5 +1,7 @@
 # Inertia Protocol
 
+**[Live site & full docs →](https://inertia-protocol.odomushi-core.workers.dev/)**
+
 A Solana Anchor program that rescues stalled transactions: when a swap fails to
 land within 2 slots (~800ms), a public keeper gate opens and independent
 keeper bots race to get it included via Jito private bundles, earning a bounty
@@ -84,7 +86,7 @@ known residual risk: [`docs/RISK_REGISTER.md`](docs/RISK_REGISTER.md).
 - [`docs/WORKED_EXAMPLES.md`](docs/WORKED_EXAMPLES.md) -- real, running code for the full lifecycle, self-rescue, and permissionless cleanup
 - [`docs/ENGINEERING_LOG.md`](docs/ENGINEERING_LOG.md) -- what was actually built and fixed, and why
 - [`docs/RISK_REGISTER.md`](docs/RISK_REGISTER.md) -- every known open risk, kept current
-- Rendered together at `/docs` on the site -- run it with `npm run dev --prefix site`
+- Rendered together at **[inertia-protocol.odomushi-core.workers.dev/docs](https://inertia-protocol.odomushi-core.workers.dev/docs)** -- or run it locally with `npm run dev --prefix site`
 
 ## Layout
 
