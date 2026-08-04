@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@solana/web3.js": "^1.95.3",
     "marked": "^18.0.7",
     "next": "16.2.12",
     "react": "19.2.4",

@@ -149,11 +149,19 @@ export default function Home() {
                 <div className="proof-card-label">{p.label}</div>
                 <div className="proof-card-detail">{p.detail}</div>
                 <div className="proof-mono proof-card-tx">
-                  {p.tx.slice(0, 20)}&hellip; &nearr;
+                  {p.tx.slice(0, 20)}&hellip; ↗
                 </div>
               </a>
             ))}
           </div>
+
+          <a href="/demo" className="demo-cta">
+            <div className="demo-cta-label">Don&apos;t take our word for it</div>
+            <div className="demo-cta-title">Trigger a real rescue yourself ↗</div>
+            <div className="demo-cta-detail">
+              Connect a devnet wallet, create a real escrow, watch a live keeper rescue it.
+            </div>
+          </a>
 
           <div className="proof-links">
             <a href="/docs/integration-guide" className="btn">
