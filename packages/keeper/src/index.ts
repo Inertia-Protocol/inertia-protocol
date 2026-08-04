@@ -5,6 +5,22 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// A raw network blip (ECONNRESET, fetch failed) inside @solana/web3.js's
+// own internal retry/reconnect logic can reject asynchronously, detached
+// from the promise chain the main loop's try/catch is watching -- observed
+// for real during a multi-hour devnet run, where it silently killed an
+// otherwise-healthy keeper process. Node's default behavior is to crash on
+// both of these; for a poll loop with no meaningful state carried between
+// iterations, logging and continuing is the correct tradeoff here, not the
+// general-purpose advice to always let uncaughtException take the process
+// down.
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled rejection (keeper continues running):", reason);
+});
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught exception (keeper continues running):", err);
+});
+
 async function main() {
   const config = loadConfigFromEnv();
   const bot = new KeeperBot(config);
