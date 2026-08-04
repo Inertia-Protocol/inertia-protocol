@@ -178,6 +178,7 @@ contract change that doesn't exist yet.
 
 ## Further reading
 
+- [`docs/RUNNING_A_KEEPER.md`](./RUNNING_A_KEEPER.md) -- just want to run a keeper against an already-integrated DEX, not build a new one? Start there instead.
 - [`docs/ENGINEERING_LOG.md`](./ENGINEERING_LOG.md) -- the contract-side story of why this design exists, and the real bugs each DEX integration turned up.
 - [`packages/sdk/README.md`](../packages/sdk/README.md) -- full SDK usage, including a worked `OrcaSwapBuilder` example.
 - [`docs/INSTRUCTIONS.md`](./INSTRUCTIONS.md) -- every instruction's accounts, params, and exact errors, for when you need more than the two calls shown above.

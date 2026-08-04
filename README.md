@@ -24,11 +24,21 @@ liquidity -- see the proof below. Full, current risk list:
 # SDK -- build swaps against a real DEX, or wrap all five instructions
 cd packages/sdk && npm install && npm run build
 
-# Reference keeper -- watches devnet, only acts once genuinely profitable
+# Reference keeper -- watches devnet, only acts once genuinely profitable.
+# The env vars below are real and point at devnet by default -- npm start
+# alone connects to a local validator that doesn't exist for you yet.
 cd packages/keeper && npm install && npm run build
-export INERTIA_KEEPER_KEYPAIR="/path/to/keypair.json"
+export INERTIA_KEEPER_RPC_URL="https://api.devnet.solana.com"
+export INERTIA_KEEPER_KEYPAIR="/path/to/keypair.json"   # solana-keygen new, funded via devnet faucet
+export INERTIA_KEEPER_ORCA_WHIRLPOOL="122n8Kvj9htD1AkY8JWJBMngzA8rWkWDPa26vPpuiU7z" # the real, live pool this repo's own proofs use
 npm start
 ```
+
+This alone will sit quietly until some escrow targeting that pool actually
+stalls -- which won't happen on its own. See
+[`docs/RUNNING_A_KEEPER.md`](docs/RUNNING_A_KEEPER.md) for the real,
+step-by-step walkthrough, including how to generate real work for your
+keeper to find and rescue.
 
 See [`packages/sdk/README.md`](packages/sdk/README.md) and
 [`packages/keeper/README.md`](packages/keeper/README.md) for real usage
@@ -69,6 +79,7 @@ known residual risk: [`docs/RISK_REGISTER.md`](docs/RISK_REGISTER.md).
 
 - [`docs/INSTRUCTIONS.md`](docs/INSTRUCTIONS.md) -- every instruction's accounts, params, state transitions, and errors
 - [`docs/INTEGRATION_GUIDE.md`](docs/INTEGRATION_GUIDE.md) -- how to actually integrate, platform-side or keeper/DEX-integration-side
+- [`docs/RUNNING_A_KEEPER.md`](docs/RUNNING_A_KEEPER.md) -- real, step-by-step walkthrough to get a keeper running against devnet and watch it actually rescue something
 - [`docs/ECONOMIC_DESIGN.md`](docs/ECONOMIC_DESIGN.md) -- the actual buffer/split/anti-snipe-tip formulas, with real numbers worked backward from a live devnet run
 - [`docs/WORKED_EXAMPLES.md`](docs/WORKED_EXAMPLES.md) -- real, running code for the full lifecycle, self-rescue, and permissionless cleanup
 - [`docs/ENGINEERING_LOG.md`](docs/ENGINEERING_LOG.md) -- what was actually built and fixed, and why

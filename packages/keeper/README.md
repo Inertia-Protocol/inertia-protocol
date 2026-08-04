@@ -42,6 +42,12 @@ only attempts a rescue if what's left clears a configurable minimum profit.
 
 ## Running it
 
+For a real, step-by-step walkthrough -- generating and funding a keypair,
+what the logs actually mean, and how to generate real work for your
+keeper to find -- see
+[`docs/RUNNING_A_KEEPER.md`](../../docs/RUNNING_A_KEEPER.md). The quick
+version:
+
 ```bash
 cd packages/keeper
 npm install
