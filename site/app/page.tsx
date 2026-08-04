@@ -83,6 +83,17 @@ export default function Home() {
               See it live
             </a>
           </div>
+
+          <a href="#proof" className="hero-status">
+            <span className="hero-status-dot" aria-hidden="true" />
+            <span>
+              Live on devnet &middot; real rescues against Orca, Raydium &amp;
+              Meteora &middot; continuous keepers running
+            </span>
+            <span className="hero-status-id">
+              {PROGRAM_ID.slice(0, 4)}&hellip;{PROGRAM_ID.slice(-4)}
+            </span>
+          </a>
         </main>
 
         <footer className="footnote">
