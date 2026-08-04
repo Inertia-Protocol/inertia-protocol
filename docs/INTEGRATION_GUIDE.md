@@ -178,7 +178,9 @@ contract change that doesn't exist yet.
 
 ## Further reading
 
-- Root [README's "Generic CPI account ordering"](../README.md#generic-cpi-account-ordering) section -- the contract-side story of why this design exists.
+- [`docs/ENGINEERING_LOG.md`](./ENGINEERING_LOG.md) -- the contract-side story of why this design exists, and the real bugs each DEX integration turned up.
 - [`packages/sdk/README.md`](../packages/sdk/README.md) -- full SDK usage, including a worked `OrcaSwapBuilder` example.
 - [`docs/INSTRUCTIONS.md`](./INSTRUCTIONS.md) -- every instruction's accounts, params, and exact errors, for when you need more than the two calls shown above.
+- [`docs/ECONOMIC_DESIGN.md`](./ECONOMIC_DESIGN.md) -- the actual gas-buffer, split, and anti-snipe-tip formulas behind the numbers mentioned here.
+- [`docs/WORKED_EXAMPLES.md`](./WORKED_EXAMPLES.md) -- complete, real code for the full lifecycle, self-rescue, and permissionless cleanup.
 - [`docs/RISK_REGISTER.md`](./RISK_REGISTER.md) -- every known open risk and limitation, kept current.

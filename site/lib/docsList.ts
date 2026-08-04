@@ -11,5 +11,8 @@ export const DOC_PAGES: DocPage[] = [
   { slug: "", title: "Overview", sourcePath: "README.md" },
   { slug: "instructions", title: "Instructions", sourcePath: "docs/INSTRUCTIONS.md" },
   { slug: "integration-guide", title: "Integration Guide", sourcePath: "docs/INTEGRATION_GUIDE.md" },
+  { slug: "economic-design", title: "Economic Design", sourcePath: "docs/ECONOMIC_DESIGN.md" },
+  { slug: "worked-examples", title: "Worked Examples", sourcePath: "docs/WORKED_EXAMPLES.md" },
+  { slug: "engineering-log", title: "Engineering Log", sourcePath: "docs/ENGINEERING_LOG.md" },
   { slug: "risk-register", title: "Risk Register", sourcePath: "docs/RISK_REGISTER.md" },
 ];

@@ -6,28 +6,34 @@ keeper bots race to get it included via Jito private bundles, earning a bounty
 from a dynamic gas buffer the user posted at submission time. If no keeper
 acts within 150 slots, the user reclaims the full buffer via `self_rescue`.
 
-Status: early development. Live on Solana devnet.
+**Status:** early development, live on Solana devnet, unaudited, not yet on
+mainnet. A continuous keeper has been running unattended against real
+liquidity -- see the proof below. Full, current risk list:
+[`docs/RISK_REGISTER.md`](docs/RISK_REGISTER.md).
+
+## Live proof
 
 - Program: [`8ST3LRU5gv8ijZehvXdwRzc6VnvqbVozCCdFzEzqhqbW`](https://explorer.solana.com/address/8ST3LRU5gv8ijZehvXdwRzc6VnvqbVozCCdFzEzqhqbW?cluster=devnet)
-- **Real integration against three independent, externally-built DEXes**, not just this repo's own test program:
-  - [`execute_swap` CPI-ing into Orca Whirlpools](https://explorer.solana.com/tx/2ZxxnPvbWwZHAev7JHgTPDbmMMvyXgWqHtDeubHyD5nRk36sDmSG73FSpvYcit7KZhFUkCpX5pTyLP8dvhH4dhPT?cluster=devnet) (externally audited, continuous-tick concentrated liquidity), a real, live devnet pool with genuine liquidity.
-  - [`execute_swap` CPI-ing into Raydium's CPMM](https://explorer.solana.com/tx/aL3g4XTGGfKbEdaaVoX1W982ej5qCrv9mPPD8yFWSprMh6fQoKk7yAvLH4wdM5yfL5c8FiEZtUS8hANH5TiXR1p?cluster=devnet) (flat constant-product), against a [pool created for real](https://explorer.solana.com/tx/23Ls4yJxFrSPaPa9XHw3HoUYjpApm3RvzVLLAnT6wn68yrmdUkfvrcp9EgARgW7W8CMZSgXQesmnxUGSC83mHYDt?cluster=devnet) with its own liquidity rather than borrowed from a third-party test pool.
-  - [`execute_swap` CPI-ing into Meteora's DLMM](https://explorer.solana.com/tx/AKMPPdey6CSrzCMvqCsN9BDCk3Vn7SFF9kXZ1BQVacVRauBmSeyGNjKtEGSNmR7WWXtBYWCi6wTgWGQyc2cP4xd?cluster=devnet) (discrete-bin liquidity, a genuinely different model from the other two), against another [pool created for real](https://explorer.solana.com/tx/5sxX2aJNSat2TqVXw2ZvE632S6hnBEVkyPeZuVCEEGjBw3iqxxLC5KHtVQqpCTtjdWmPtD3KHZzs1tzuSSxnJeZ2?cluster=devnet) with its own liquidity.
-  - All three executed as genuine rescues (anti-snipe tip, 90/5/5 split, real swap output delivered), and all three are structurally different from `mock-dex` and from each other -- this is what proves the protocol is swap-venue-agnostic in practice, not just by design. Each integration found and fixed a different real bug (see "Generic CPI account ordering" below): an account-ordering incompatibility, a discriminator-format incompatibility ruled out rather than worked around, a real SDK packaging defect, and a subtler account-substitution bug the redesign's own checks caught directly.
-- Full lifecycle proof against `mock-dex` (this repo's own test program): a fast execution, a rescue (keeper paid 90% of the buffer) at [`R8bBSdVKdn9XxSkuSymGn3QfRRXDs4BVkqNsXCc3FTDhHDJuXMEoipzYngTTsSP8ghQJ179Tfug9ZoQiZuDKbMg`](https://explorer.solana.com/tx/R8bBSdVKdn9XxSkuSymGn3QfRRXDs4BVkqNsXCc3FTDhHDJuXMEoipzYngTTsSP8ghQJ179Tfug9ZoQiZuDKbMg?cluster=devnet), a self-rescue at [`3dHMjRwWrQTbSvqADqAQ3Tjps3Y82pv99sxEsf7WJKmcHedyGLBuDLYr9fEWnSRdf26taddQzCbGgEpBpbZ7Dzk8`](https://explorer.solana.com/tx/3dHMjRwWrQTbSvqADqAQ3Tjps3Y82pv99sxEsf7WJKmcHedyGLBuDLYr9fEWnSRdf26taddQzCbGgEpBpbZ7Dzk8?cluster=devnet), and a permissionless cleanup at [`2JAs1RXurnQzPHqFV3s12krngrFFyZ6U4ek9mJAz1p1eKZMT7fM2A8RLkU3KtqkKkZitCp1e8VaBeyXFtVAvDM4x`](https://explorer.solana.com/tx/2JAs1RXurnQzPHqFV3s12krngrFFyZ6U4ek9mJAz1p1eKZMT7fM2A8RLkU3KtqkKkZitCp1e8VaBeyXFtVAvDM4x?cluster=devnet).
-- Real finding from that run, kept rather than hidden: on a public RPC, the 2-slot (~800ms) fast-path window is tight enough that ordinary network latency alone pushed multiple "should be fast" demo transactions into the rescue path -- exactly the condition this protocol exists for, hit live rather than staged.
-- **Proven under real concurrent competition, not just single-keeper demos**: two independently-keyed keeper bots run continuously against the same live Orca pool, racing every escrow an unattended activity generator creates. Every real race resolves to exactly one clean winner with correct loss-detection on the losing side -- zero double-spends, zero stuck funds -- for example [this rescue](https://explorer.solana.com/tx/35xZnY8busagAJ28JoAstDZBMBtnxZx4S1hbEVcVsHi87DgMwfxbGAipzxyz1kcyqnprSEbmiSHYMtewW6Qh2gbN?cluster=devnet), cleanly lost by the other keeper watching the same escrow. Over a larger sample the win distribution converged toward even rather than staying locked to one side -- real evidence against the outcome being pure clock-phase determinism, though real-world keeper diversity (independent operators, varied infra and latency) hasn't been tested yet. See [`docs/RISK_REGISTER.md`](docs/RISK_REGISTER.md) for what this does and doesn't prove.
-- Not yet on mainnet. Treasury is still a devnet-only placeholder keypair -- see [`docs/RISK_REGISTER.md`](docs/RISK_REGISTER.md) for this and every other known open risk, kept honest rather than glossed over.
+- **Real, genuine rescues against three independent, externally-built DEXes**, not just this repo's own test program -- [Orca Whirlpools](https://explorer.solana.com/tx/2ZxxnPvbWwZHAev7JHgTPDbmMMvyXgWqHtDeubHyD5nRk36sDmSG73FSpvYcit7KZhFUkCpX5pTyLP8dvhH4dhPT?cluster=devnet), [Raydium CPMM](https://explorer.solana.com/tx/aL3g4XTGGfKbEdaaVoX1W982ej5qCrv9mPPD8yFWSprMh6fQoKk7yAvLH4wdM5yfL5c8FiEZtUS8hANH5TiXR1p?cluster=devnet), and [Meteora DLMM](https://explorer.solana.com/tx/AKMPPdey6CSrzCMvqCsN9BDCk3Vn7SFF9kXZ1BQVacVRauBmSeyGNjKtEGSNmR7WWXtBYWCi6wTgWGQyc2cP4xd?cluster=devnet) -- three structurally different liquidity models, each integration found a different real bug. Full story: [`docs/ENGINEERING_LOG.md`](docs/ENGINEERING_LOG.md).
+- **Proven under real concurrent competition**, not just single-keeper demos: two independently-keyed keeper bots racing the same live pool, every race resolving to exactly one clean winner -- [example](https://explorer.solana.com/tx/35xZnY8busagAJ28JoAstDZBMBtnxZx4S1hbEVcVsHi87DgMwfxbGAipzxyz1kcyqnprSEbmiSHYMtewW6Qh2gbN?cluster=devnet). What this does and doesn't prove: [`docs/RISK_REGISTER.md`](docs/RISK_REGISTER.md).
+- Full lifecycle proof against `mock-dex` (this repo's own test program): [rescue](https://explorer.solana.com/tx/R8bBSdVKdn9XxSkuSymGn3QfRRXDs4BVkqNsXCc3FTDhHDJuXMEoipzYngTTsSP8ghQJ179Tfug9ZoQiZuDKbMg?cluster=devnet), [self-rescue](https://explorer.solana.com/tx/3dHMjRwWrQTbSvqADqAQ3Tjps3Y82pv99sxEsf7WJKmcHedyGLBuDLYr9fEWnSRdf26taddQzCbGgEpBpbZ7Dzk8?cluster=devnet), [permissionless cleanup](https://explorer.solana.com/tx/2JAs1RXurnQzPHqFV3s12krngrFFyZ6U4ek9mJAz1p1eKZMT7fM2A8RLkU3KtqkKkZitCp1e8VaBeyXFtVAvDM4x?cluster=devnet).
 
-### Generic CPI account ordering
+## Quick start
 
-`execute_swap` originally hardcoded its CPI account list into a fixed 4-item prefix (input token account, destination, escrow, token program) followed by whatever extra accounts the caller supplied. That only ever worked for a program built to match that exact order -- which `mock-dex` was, since this repo wrote it. Solana matches CPI accounts positionally, not by name, so a real, independently-built program like Orca Whirlpools (whose own `swap` instruction expects `[token_program, token_authority, whirlpool, token_owner_account_a, ...]`, a completely different order) could not be called at all under the old design.
+```bash
+# SDK -- build swaps against a real DEX, or wrap all five instructions
+cd packages/sdk && npm install && npm run build
 
-`execute_swap` now takes the entire CPI account list from the caller, in whatever order the target program actually needs. The same security guarantees the old fixed prefix gave for free are preserved by explicit checks: the three security-critical accounts (the escrow's real input token account, its real expected destination, and the real SPL Token program) must each appear somewhere in the supplied list, and the escrow's own entry has its signer flag forced to `true` wherever it appears, since only `invoke_signed`'s PDA seeds can actually grant that. Verified against the existing 8-test integration suite (still 8/8) before being proven against Orca on devnet.
+# Reference keeper -- watches devnet, only acts once genuinely profitable
+cd packages/keeper && npm install && npm run build
+export INERTIA_KEEPER_KEYPAIR="/path/to/keypair.json"
+npm start
+```
 
-This does not make execute_swap universally compatible, and that limit was found for real, not assumed: `expected_discriminator` is a fixed 8 bytes, matching the now-dominant Anchor instruction-discriminator convention. Orca Whirlpools, Raydium's newer CPMM program, and Meteora's DLMM all use it, and all three work. Raydium's *classic* AMM program predates Anchor and encodes its swap instruction as a single native tag byte followed directly by the raw amount fields -- there is no stable 8-byte prefix to check at all, since those "discriminator" bytes would actually vary with the swap amount. Confirmed by reading its real instruction-encoding source, not assumed from docs; integrating with a pre-Anchor program would need a further change (a configurable discriminator length), not attempted here.
-
-The Meteora integration also caught something the other two didn't: its SDK derives token accounts from the swap authority (assuming authority and token owner are always the same party), which silently pointed the built instruction at an account the escrow doesn't own. The generalized redesign's own new presence checks rejected it outright with `MissingRequiredSwapAccount` rather than letting a wrong transaction through -- a real bug the checks caught unprompted, not a hypothetical they were designed against.
+See [`packages/sdk/README.md`](packages/sdk/README.md) and
+[`packages/keeper/README.md`](packages/keeper/README.md) for real usage
+examples, or [`CONTRIBUTING.md`](CONTRIBUTING.md) to build and fuzz the
+on-chain program itself.
 
 ## How it works
 
@@ -49,30 +55,32 @@ flowchart TD
     B -->|"elapsed &gt; CLEANUP_SLOTS (300 slots)<br/>cleanup_expired_escrow, anyone"| J["10% buffer bounty to caller<br/>90% buffer + rent to user<br/>status: Expired, escrow closed"]
 ```
 
-Every threshold above is a slot count, not a millisecond value. The contract compares
-`Clock::get()?.slot` against `creation_slot + N`, so it stays correct regardless of
-Solana's actual slot time. `execute_swap` is the only instruction that performs the
-underlying swap; `self_rescue` and `cleanup_expired_escrow` are pure fallbacks that
-never touch the swap program.
+Every threshold is a slot count, not a millisecond value, checked against
+`Clock::get()?.slot` -- correct regardless of Solana's actual slot time.
+`execute_swap` is the only instruction that performs the underlying swap;
+`self_rescue` and `cleanup_expired_escrow` are pure fallbacks that never
+touch the swap program. The rescue-path tip is anti-snipe by design: it
+starts equal to the keeper's own reward right when the TTL elapses, making
+pure profit-seeking sniping break-even-or-negative at the earliest
+possible slot, then decays back to a normal floor. Full reasoning and the
+known residual risk: [`docs/RISK_REGISTER.md`](docs/RISK_REGISTER.md).
 
-The rescue-path tip requirement is anti-snipe by design: right when the TTL elapses,
-the required tip equals the keeper's own reward, making pure profit-seeking sniping
-break-even-or-negative at the earliest possible slot. That requirement decays linearly
-back to a normal floor over `TIP_DECAY_SLOTS` (~6 seconds), so a genuine rescue can
-still happen quickly once the ratio clears. A known, documented residual risk remains:
-this removes the profit motive for sniping, not the ability to act. See the design
-note in `execute_swap.rs` for the full reasoning and what's still open pre-audit.
+## Full documentation
+
+- [`docs/INSTRUCTIONS.md`](docs/INSTRUCTIONS.md) -- every instruction's accounts, params, state transitions, and errors
+- [`docs/INTEGRATION_GUIDE.md`](docs/INTEGRATION_GUIDE.md) -- how to actually integrate, platform-side or keeper/DEX-integration-side
+- [`docs/ECONOMIC_DESIGN.md`](docs/ECONOMIC_DESIGN.md) -- the actual buffer/split/anti-snipe-tip formulas, with real numbers worked backward from a live devnet run
+- [`docs/WORKED_EXAMPLES.md`](docs/WORKED_EXAMPLES.md) -- real, running code for the full lifecycle, self-rescue, and permissionless cleanup
+- [`docs/ENGINEERING_LOG.md`](docs/ENGINEERING_LOG.md) -- what was actually built and fixed, and why
+- [`docs/RISK_REGISTER.md`](docs/RISK_REGISTER.md) -- every known open risk, kept current
+- Rendered together at `/docs` on the site -- run it with `npm run dev --prefix site`
 
 ## Layout
 
 - `programs/inertia-protocol/`: the on-chain program
-- [`packages/sdk/`](packages/sdk/README.md): TypeScript client SDK. Wraps all five instructions, mirrors the anti-snipe tip math client-side so `executeSwap()` auto-computes and attaches the correct tip
-- [`packages/keeper/`](packages/keeper/README.md): reference open-source keeper bot. Discovers pending escrows, only acts once the anti-snipe curve makes it genuinely profitable, swap-execution is pluggable -- `mock-dex` (this repo's test program) plus the same three real DEX clients below, all consumed as ordinary SDK exports rather than baked into this bot's own internals
-- The SDK ships three real, reusable DEX swap-builder clients directly, so any integrating platform can use them without depending on the reference keeper: a real [Orca Whirlpools client](packages/sdk/src/orcaSwap.ts), a real [Raydium CPMM client](packages/sdk/src/raydiumCpmmSwap.ts), and a real [Meteora DLMM client](packages/sdk/src/meteoraDlmmSwap.ts)
-- `trident-tests/`: Trident fuzz tests for all three fund-moving instructions -- `self_rescue`, `cleanup_expired_escrow`, and `execute_swap` (the ordinary path, the anti-snipe decay curve at randomized points, the slippage floor, and the account-presence checks from the CPI account-ordering redesign). 100k-iteration campaign, ~663,600 total instruction invocations, zero assertion panics
-- [`docs/INSTRUCTIONS.md`](docs/INSTRUCTIONS.md): systematic reference for all five instructions -- accounts, params, state transitions, and every error each one can actually raise
-- [`docs/INTEGRATION_GUIDE.md`](docs/INTEGRATION_GUIDE.md): how to actually integrate -- platform-side (`initialize_escrow` only) and keeper/DEX-integration-side (the CPI account-ordering, signer-forcing, and discriminator pattern learned across three real integrations)
-- [`docs/RISK_REGISTER.md`](docs/RISK_REGISTER.md): every known open risk and limitation, from custody to protocol design to DEX-integration footguns -- kept current, not aspirational
-- `site/`: public-facing landing page (Next.js). The hero is a live, honest dramatization of the actual mechanism, not decorative copy; run it with `npm run dev --prefix site`
+- [`packages/sdk/`](packages/sdk/README.md): TypeScript client SDK, including three real, reusable DEX swap-builder clients ([Orca](packages/sdk/src/orcaSwap.ts), [Raydium CPMM](packages/sdk/src/raydiumCpmmSwap.ts), [Meteora DLMM](packages/sdk/src/meteoraDlmmSwap.ts)) any integrating platform can use directly
+- [`packages/keeper/`](packages/keeper/README.md): reference open-source keeper bot, consuming those same SDK exports rather than special-casing them
+- `trident-tests/`: Trident fuzz tests for all three fund-moving instructions -- 100k-iteration campaign, ~663,600 total instruction invocations, zero assertion panics
+- `site/`: public-facing landing page and `/docs` (Next.js)
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) for how to actually build, test, and fuzz this locally.

@@ -24,7 +24,7 @@ reference bot's internals. This bot's `bot.ts` is just one consumer of that
 same public SDK surface, not a special, hardcoded case. The Orca builder is
 what first proved `execute_swap`'s CPI relay actually works against a real
 program's real account layout, not just one built to match Inertia's own
-assumptions (see the root README's "Generic CPI account ordering" section).
+assumptions (see [`docs/ENGINEERING_LOG.md`](../../docs/ENGINEERING_LOG.md)).
 Jupiter's own aggregator API was evaluated and ruled out for this
 integration specifically: its convenience wrapper inserts setup instructions
 (SOL wrapping, ATA creation) that require the real end user's signature,

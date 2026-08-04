@@ -28,7 +28,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
 
       <div className="wrap docs-layout">
         <DocsSidebar />
-        <main className="docs-content">{children}</main>
+        <main className="docs-main">{children}</main>
       </div>
     </div>
   );

@@ -38,7 +38,13 @@ function resolveHref(href: string, currentSourceDir: string): string {
   return `${GITHUB_BASE}${repoRelative}${hash ? `#${hash}` : ""}`;
 }
 
-function buildMarked(currentSourceDir: string): Marked {
+export interface Heading {
+  depth: number;
+  id: string;
+  text: string;
+}
+
+function buildMarked(currentSourceDir: string, headings: Heading[]): Marked {
   // A fresh instance per doc, closed over that doc's own directory -- rather
   // than one shared global renderer -- since link resolution genuinely
   // depends on which file is currently being rendered.
@@ -57,22 +63,32 @@ function buildMarked(currentSourceDir: string): Marked {
       // pattern -- marked binds `this` (including `this.parser`) when it
       // invokes these, which only works with a real function `this`, not an
       // arrow function's captured lexical scope.
-      heading({ tokens, depth }) {
-        const text = this.parser.parseInline(tokens);
+      heading({ tokens, depth, text }) {
+        // `text` is the heading's raw markdown source (no HTML escaping) --
+        // used for the slug and the on-page outline's label. The rendered
+        // <hN> tag itself still goes through parseInline(tokens) so any
+        // inline formatting inside a heading renders correctly.
+        const html = this.parser.parseInline(tokens);
         const slug = text
-          .replace(/<[^>]+>/g, "")
           .toLowerCase()
           .trim()
           .replace(/[^\w\s-]/g, "")
           .replace(/\s+/g, "-");
-        return `<h${depth} id="${slug}">${text}</h${depth}>`;
+        // Only h2/h3 make the on-page outline -- h1 is the page title itself
+        // (redundant to list), h4 is used for small label-style subheads
+        // dense enough to make the outline noisy rather than useful.
+        if (depth === 2 || depth === 3) {
+          headings.push({ depth, id: slug, text });
+        }
+        return `<h${depth} id="${slug}">${html}</h${depth}>`;
       },
     },
   });
 }
 
-export function loadDoc(page: DocPage): { html: string; title: string } {
+export function loadDoc(page: DocPage): { html: string; title: string; headings: Heading[] } {
   const raw = readFileSync(path.join(REPO_ROOT, page.sourcePath), "utf8");
-  const html = buildMarked(path.posix.dirname(page.sourcePath)).parse(raw, { async: false });
-  return { html, title: page.title };
+  const headings: Heading[] = [];
+  const html = buildMarked(path.posix.dirname(page.sourcePath), headings).parse(raw, { async: false });
+  return { html, title: page.title, headings };
 }
