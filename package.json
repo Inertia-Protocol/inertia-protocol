@@ -1,6 +1,12 @@
 {
   "name": "inertia-protocol",
   "version": "0.1.0",
+  "description": "Trustless JIT escrow that rescues stalled Solana transactions via keeper bot acceleration.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Inertia-Protocol/inertia-protocol"
+  },
   "private": true,
   "scripts": {
     "test": "anchor test"

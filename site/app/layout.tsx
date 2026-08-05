@@ -18,10 +18,26 @@ const bodoniModa = Bodoni_Moda({
   weight: ["500", "600", "700", "800", "900"],
 });
 
+const SITE_URL = "https://inertia-protocol.odomushi-core.workers.dev";
+const DESCRIPTION =
+  "A Solana program that rescues stalled swaps via keeper bot economics, before they turn into a bad fill.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Inertia Protocol",
-  description:
-    "A Solana program that rescues stalled swaps via keeper bot economics, before they turn into a bad fill.",
+  description: DESCRIPTION,
+  openGraph: {
+    title: "Inertia Protocol",
+    description: DESCRIPTION,
+    url: SITE_URL,
+    siteName: "Inertia Protocol",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Inertia Protocol",
+    description: DESCRIPTION,
+  },
 };
 
 export default function RootLayout({
