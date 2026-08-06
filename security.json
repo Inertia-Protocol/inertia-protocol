@@ -1,0 +1,8 @@
+{
+  "name": "Inertia Protocol",
+  "project_url": "https://inertia-protocol.odomushi-core.workers.dev",
+  "source_code": "https://github.com/Inertia-Protocol/inertia-protocol",
+  "description": "Trustless JIT escrow that rescues stalled Solana transactions via keeper bot acceleration.",
+  "contacts": ["email:odomushi.core@gmail.com"],
+  "policy": "https://inertia-protocol.odomushi-core.workers.dev/docs/risk-register"
+}
