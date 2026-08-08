@@ -22,9 +22,9 @@ const NATIVE_MINT = new PublicKey("So11111111111111111111111111111111111111112")
 const ORCA_WHIRLPOOL_PROGRAM_ID = new PublicKey("whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc");
 // Same real, live, high-liquidity devnet pool every other proof in this repo uses.
 const OUTPUT_MINT = new PublicKey("9Z8PQAgh6paeYZdHfrBBsfaj4AeqNJWS8H1G19nTBB94");
-const WHIRLPOOL_SWAP_DISCRIMINATOR = Buffer.from([248, 198, 158, 145, 225, 117, 135, 200]);
-const INITIALIZE_ESCROW_DISCRIMINATOR = Buffer.from([243, 160, 77, 153, 11, 92, 48, 209]);
-const ESCROW_SEED = Buffer.from("escrow");
+const WHIRLPOOL_SWAP_DISCRIMINATOR = Uint8Array.from([248, 198, 158, 145, 225, 117, 135, 200]);
+const INITIALIZE_ESCROW_DISCRIMINATOR = Uint8Array.from([243, 160, 77, 153, 11, 92, 48, 209]);
+const ESCROW_SEED = new TextEncoder().encode("escrow");
 
 const SWAP_AMOUNT_LAMPORTS = BigInt(5_000_000); // 0.005 SOL, matching the repo's own activity generator
 const BUFFER_LAMPORTS = BigInt(40_000_000); // 0.04 SOL, matching BUFFER_LAMPORTS in the integration suite
@@ -34,10 +34,34 @@ const MIN_SOL_NEEDED_LAMPORTS = BUFFER_LAMPORTS + TOKEN_ACCOUNT_RENT_LAMPORTS + 
 const POLL_INTERVAL_MS = 3000;
 const MAX_POLLS = 40; // ~2 minutes
 
-function u64LE(value: bigint): Buffer {
-  const buf = Buffer.alloc(8);
-  buf.writeBigUInt64LE(value);
-  return buf;
+// Plain Uint8Array/DataView rather than the Node `Buffer` polyfill -- this
+// runs in an arbitrary visitor's browser, and Turbopack's injected Buffer
+// shim here is missing writeBigUInt64LE specifically (confirmed live: "e
+// .writeBigUInt64LE is not a function" on the deployed demo). Same lesson
+// as RescueCounter.tsx: native browser primitives, no bundler-dependent
+// polyfill in the critical path.
+function u64LE(value: bigint): Uint8Array {
+  const bytes = new Uint8Array(8);
+  new DataView(bytes.buffer).setBigUint64(0, value, true);
+  return bytes;
+}
+
+function concatBytes(chunks: Uint8Array[]): Uint8Array {
+  const total = chunks.reduce((sum, c) => sum + c.length, 0);
+  const result = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return result;
+}
+
+// @solana/web3.js types TransactionInstruction.data as Buffer specifically,
+// but only ever reads it as byte data during serialization -- a plain
+// Uint8Array is safe here and avoids depending on the Buffer polyfill at all.
+function asInstructionData(bytes: Uint8Array): Buffer {
+  return bytes as unknown as Buffer;
 }
 
 function splInitializeAccountIx(account: PublicKey, mint: PublicKey, owner: PublicKey): TransactionInstruction {
@@ -49,7 +73,7 @@ function splInitializeAccountIx(account: PublicKey, mint: PublicKey, owner: Publ
       { pubkey: owner, isSigner: false, isWritable: false },
       { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
     ],
-    data: Buffer.from([1]),
+    data: asInstructionData(Uint8Array.from([1])),
   });
 }
 
@@ -57,7 +81,7 @@ function splSyncNativeIx(account: PublicKey): TransactionInstruction {
   return new TransactionInstruction({
     programId: TOKEN_PROGRAM_ID,
     keys: [{ pubkey: account, isSigner: false, isWritable: true }],
-    data: Buffer.from([17]),
+    data: asInstructionData(Uint8Array.from([17])),
   });
 }
 
@@ -72,7 +96,7 @@ function ataCreateIdempotentIx(payer: PublicKey, ata: PublicKey, owner: PublicKe
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
       { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
     ],
-    data: Buffer.from([1]),
+    data: asInstructionData(Uint8Array.from([1])),
   });
 }
 
@@ -91,7 +115,7 @@ function buildInitializeEscrowIx(params: {
   escrow: PublicKey;
   nonce: bigint;
 }): TransactionInstruction {
-  const data = Buffer.concat([
+  const data = concatBytes([
     INITIALIZE_ESCROW_DISCRIMINATOR,
     u64LE(params.nonce),
     u64LE(BUFFER_LAMPORTS),
@@ -113,7 +137,7 @@ function buildInitializeEscrowIx(params: {
       { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     ],
-    data,
+    data: asInstructionData(data),
   });
 }
 
