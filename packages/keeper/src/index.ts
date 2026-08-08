@@ -60,9 +60,21 @@ export { checkProfitability } from "./profitability.js";
 export { MockDexSwapBuilder } from "./mockDexSwap.js";
 export { loadConfigFromEnv, loadKeypairFromFile } from "./config.js";
 
-// Only run the loop when executed directly (node dist/index.js), not when
-// imported as a library by a test.
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Run main() unless explicitly told not to. This used to check
+// `import.meta.url === file://${process.argv[1]}` to distinguish direct
+// execution from a library import, but that comparison is broken under any
+// process manager that wraps the script rather than exec'ing it directly --
+// pm2's fork mode `require()`s the target through its own
+// ProcessContainerFork.js, so process.argv[1] pointed at pm2's wrapper, not
+// at this file, and the condition was silently always false. The keeper
+// never once called main() under pm2: the process stayed "online," imports
+// resolved, but the poll loop -- all of it -- never ran. Confirmed directly
+// via a file-based marker log bypassing stdout entirely. Library consumers
+// (tests, anything doing `import { KeeperBot } from "@inertia-protocol/keeper"`)
+// now opt out explicitly instead of relying on a self-detection heuristic
+// that can't actually distinguish "run under a wrapper" from "imported as a
+// library" in general.
+if (process.env.INERTIA_KEEPER_LIBRARY_MODE !== "1") {
   main().catch((err) => {
     console.error("Keeper bot crashed:", err);
     process.exit(1);
