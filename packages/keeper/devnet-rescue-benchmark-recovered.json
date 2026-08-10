@@ -1,0 +1,90 @@
+{
+  "ranAt": "2026-08-10T17:28:30.266Z",
+  "note": "Recovered from a crashed benchmark run -- all 10 escrows independently confirmed CLOSED (rescued) via `solana account` before this report was built. Timings are real on-chain blockTime deltas, not wall-clock polling.",
+  "escrowsCreated": 10,
+  "escrowsRescued": 10,
+  "recoveryRatePercent": 100,
+  "averageSecondsToRescue": 22.8,
+  "results": [
+    {
+      "escrow": "BdziMidwcdMAVMRa7qrZ6yyuTFMJ8VRX2b2Q4nAbLnZT",
+      "createSignature": "2xVrfyFpbFUWFo9HhQCSANHCRgoYQiSSM3k3ZGHZehcQQ47zhzur27bXwbV4sDq1EveVcmpDo4ZdFpb8sBhgwfQZ",
+      "createBlockTime": 1786382646,
+      "closingSignature": "5XCk2U8KUg5gSeZSu6EZsrar2f7D7W6VQH1N7oUE9VZD4AVbH3NkkTSn4uHgaQeNnmQJHaEpPF2e5iXoA39UZ5bQ",
+      "closingBlockTime": 1786382652,
+      "secondsToRescue": 6
+    },
+    {
+      "escrow": "FgY3eajxwqff5wsbAAK9LwvgaXL7bR9UKwF75eGjLNoj",
+      "createSignature": "5RbLpkrtKwdjbpV5iCjBbRytpnbYtzqJaGn7anjiT7xTv52yVD8vEVPLSLrHBGMTNNduxhC7UVcVCj42tuPqUBUG",
+      "createBlockTime": 1786382652,
+      "closingSignature": "3AkVbSu3zJmvizjn3irLpq7ibn5VuwEnC6mBfEJS3NYGRCtX1hWVcctfrUj4V9SErv6jus3gELo24wvWZGDhQpTr",
+      "closingBlockTime": 1786382664,
+      "secondsToRescue": 12
+    },
+    {
+      "escrow": "J46jng8KZHS1UxB6V5ULZty5kKydGQCrt3BNifDzCYHy",
+      "createSignature": "3tmk8Yf6ZNJKkkqp1zZhKB7rWB2iKb6fXU3zm5woFe217kjUgeU1WkuTPC1jscUPqFFujP571tAtHyGtTLNWjCvw",
+      "createBlockTime": 1786382660,
+      "closingSignature": "5o5XsZenKsADU5WfHmiYCgoWa12H8MK62bpEMP9rNJMA5Gz5noAyAYsih4LCBi93hLCvWGWqmD2ScmU5Rg6oq6gw",
+      "closingBlockTime": 1786382680,
+      "secondsToRescue": 20
+    },
+    {
+      "escrow": "2UkRaxbU7P9FbAFKbgSjBKp3Gm7hccLWZPUhHjqXG9PC",
+      "createSignature": "3sFYhLMsZVkJ8kQ8CWBWfYL8JB3zTBJHkB4bZiXbTEEQGP1boJF7WojK9XeaPNbeUo3TDG1jFKgQYP85My8binSY",
+      "createBlockTime": 1786382675,
+      "closingSignature": "4xeB1hZ6Sgc8AWv7xqphn5CpX1FY3Apur7fCW6pvV2aBHEBE1FHn6vM5V1DBU4AjxFUZ7fVpWc9yP4uo2LCAmddy",
+      "closingBlockTime": 1786382686,
+      "secondsToRescue": 11
+    },
+    {
+      "escrow": "4WssCCu7dtXt2Zr8GuihSh4Jexva51VoJTCU2Wdq9LYW",
+      "createSignature": "MLhGgeQR2bCnnUZ4dnPo4ifPz3jTrHKjV9RAU2ZxueMWKE3UhjfkpaVeVreHrygVaPPa5t5FaahcrxhKgU7pXZr",
+      "createBlockTime": 1786382681,
+      "closingSignature": "2ePBJd3dAZnyfS39Zoc7k1nzgmWxecRdj9nUHNWsBRVctPLER4PQjTevT1K9RtwpDktsEmzN9F95NT4khYXuevmP",
+      "closingBlockTime": 1786382692,
+      "secondsToRescue": 11
+    },
+    {
+      "escrow": "AhxF6gZx6SNtsvz47FLANxzJYbw93mSa7dryeJcPtiFi",
+      "createSignature": "3B6DnX9LtdE1ZtRz3Zfohp8ADCCGKNk8SeUyudxJjzFaeXLSSCLsfX7bZX5PV7VHuqkniRE23Sayo9arJcc4WJNA",
+      "createBlockTime": 1786382688,
+      "closingSignature": "35Rdf5iktymSaV4Cf75DtmevjVsFep4nFVLW5SgNb1vQjayyzcSAdYbw1Swk8jTsvAxTddKbeMfYq7CyS6qLRGUe",
+      "closingBlockTime": 1786382710,
+      "secondsToRescue": 22
+    },
+    {
+      "escrow": "GxK1nMdYUU6CBrHjMzwk1PVCn7SMbm5C2bt8X8ziWyUU",
+      "createSignature": "3eyPQaRUEMhkAYh1aEn3jjSRqtedG63wEScVFaLfYr5f4ApGKjWv71vusafWSKZR6URFxFxF4apDqJMTqBi59Wrs",
+      "createBlockTime": 1786382695,
+      "closingSignature": "4N6GVhbWF3TFptn1wRZoMSLMMJek94xyo7dbeU7ogeFC1QPRWg4sfiz9A1AVEVSCBMkg9XYBn8pnewed5kiKMdQc",
+      "closingBlockTime": 1786382744,
+      "secondsToRescue": 49
+    },
+    {
+      "escrow": "63XZxtmcyyK5KiVxAzrD4Ljhg1HdHf6dgBwnWCoaURU6",
+      "createSignature": "4vgJc4jUfS96nNgkz7LcNwW37fGtvpRhbNS1VdYHazxwYj7ZyiyaURYkwUYo5EKnXuaBwz2ckZpbm2KQJFVFR3Cg",
+      "createBlockTime": 1786382706,
+      "closingSignature": "4SqyknYpLhXYgeZ69m6RNGco6emt1hLgEft7qPhgqNzx99E4ZfSHRvCm5B2dsaG3Q29LrfW8GLT4prtrjguQYQnD",
+      "closingBlockTime": 1786382724,
+      "secondsToRescue": 18
+    },
+    {
+      "escrow": "6PoDNt1rdRaLjzNsn9VGa37qftvx5XBB4KfDsV6heGQW",
+      "createSignature": "2vGtya7zxsKUyP7NKLPQG91HTFQ5CyQL2yPreeoMtLR6v3p65zik1Ka98Av76RuTeR2ZmWLeT2bTBHCknDebWUur",
+      "createBlockTime": 1786382718,
+      "closingSignature": "2nRNR9ojNy37JmeLaoUdM8UHn6zQFpzp1MHC86XWhUBCo7ejWeV3qDpNKiTMkmWUMy8HRUtWzuvggk4uskfoX8E4",
+      "closingBlockTime": 1786382758,
+      "secondsToRescue": 40
+    },
+    {
+      "escrow": "BgQx8efFVj6Bont4HyKRXANh3Xkb4p9jcNr2d1FPKsCN",
+      "createSignature": "4F1hYxQpj391wicqE5bXFJsSBhbBk4kFj45bjP62Z6j64X5dyBFXZKUCiTvQzBT7nTzL5XujpMmYHKyeGoBPKWis",
+      "createBlockTime": 1786382726,
+      "closingSignature": "8EYG7S3DdXDSRQGqb3JJ3obcdBPKAhzWDA69REr8tjw6GCrAjw3YzR5LqmR9BvqxbQw2ngxXUGy9eCmWaB53ov2",
+      "closingBlockTime": 1786382765,
+      "secondsToRescue": 39
+    }
+  ]
+}
