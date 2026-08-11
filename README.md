@@ -86,6 +86,7 @@ known residual risk: [`docs/RISK_REGISTER.md`](docs/RISK_REGISTER.md).
 - [`docs/WORKED_EXAMPLES.md`](docs/WORKED_EXAMPLES.md) -- real, running code for the full lifecycle, self-rescue, and permissionless cleanup
 - [`docs/ENGINEERING_LOG.md`](docs/ENGINEERING_LOG.md) -- what was actually built and fixed, and why
 - [`docs/RISK_REGISTER.md`](docs/RISK_REGISTER.md) -- every known open risk, kept current
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) -- where this could go next; vision only, nothing here is built
 - Rendered together at **[inertia-protocol.odomushi-core.workers.dev/docs](https://inertia-protocol.odomushi-core.workers.dev/docs)** -- or run it locally with `npm run dev --prefix site`
 
 ## Layout
