@@ -4,7 +4,7 @@ type AnchorProvider = InstanceType<typeof anchorPkg.AnchorProvider>;
 
 import { AccountMeta, Connection, PublicKey } from "@solana/web3.js";
 import { getAccount } from "@solana/spl-token";
-import { InertiaClient, EscrowStateAccount, OrcaSwapBuilder } from "@inertia-protocol/sdk";
+import { InertiaClient, EscrowStateAccount, OrcaSwapBuilder, RaydiumCpmmSwapBuilder } from "@inertia-protocol/sdk";
 
 import { KeeperConfig } from "./config.js";
 import { checkProfitability } from "./profitability.js";
@@ -24,6 +24,7 @@ export class KeeperBot {
   private readonly connection: Connection;
   private readonly mockDexBuilder: MockDexSwapBuilder;
   private readonly orcaBuilder: OrcaSwapBuilder;
+  private readonly raydiumBuilder: RaydiumCpmmSwapBuilder;
 
   constructor(private readonly config: KeeperConfig) {
     this.connection = new Connection(config.rpcUrl, "confirmed");
@@ -31,6 +32,7 @@ export class KeeperBot {
     this.client = new InertiaClient(this.provider);
     this.mockDexBuilder = new MockDexSwapBuilder(this.provider);
     this.orcaBuilder = new OrcaSwapBuilder(this.provider);
+    this.raydiumBuilder = new RaydiumCpmmSwapBuilder(this.connection, config.raydiumCpmmProgramId);
   }
 
   /**
@@ -61,7 +63,11 @@ export class KeeperBot {
     const isOrca =
       this.config.orcaWhirlpoolAddress !== undefined &&
       account.expectedProgramId.equals(this.orcaBuilder.programId);
-    if (!isMockDex && !isOrca) {
+    const isRaydium =
+      this.config.raydiumPoolAddress !== undefined &&
+      this.config.raydiumConfigId !== undefined &&
+      account.expectedProgramId.equals(this.config.raydiumCpmmProgramId);
+    if (!isMockDex && !isOrca && !isRaydium) {
       return { escrow, outcome: "skipped-unknown-swap-program" };
     }
 
@@ -105,6 +111,34 @@ export class KeeperBot {
         swapInstructionData = built.swapInstructionData;
         remainingAccounts = built.remainingAccounts;
         swapProgram = this.orcaBuilder.programId;
+      } else if (isRaydium) {
+        // Same "look mints up for real, don't assume or cache" pattern as
+        // the Orca branch above -- EscrowState stores token accounts, not
+        // mints.
+        const [inputAccountInfo, outputAccountInfo] = await Promise.all([
+          getAccount(this.connection, account.userInputTokenAccount),
+          getAccount(this.connection, account.expectedDestinationTokenAccount),
+        ]);
+        const built = await this.raydiumBuilder.buildSwap({
+          poolId: this.config.raydiumPoolAddress!,
+          configId: this.config.raydiumConfigId!,
+          userInputTokenAccount: account.userInputTokenAccount,
+          destinationTokenAccount: account.expectedDestinationTokenAccount,
+          inputMint: inputAccountInfo.mint,
+          outputMint: outputAccountInfo.mint,
+          escrowAuthority: escrow,
+          amountIn: account.inputAmount,
+          // Inertia's own on-chain check (execute_swap.rs) already enforces
+          // received >= expected_output_amount as the real floor regardless
+          // of what any individual DEX's own instruction allows through --
+          // matching that value here rather than computing an independent
+          // slippage bound just gives Raydium's own instruction the same
+          // floor Inertia checks anyway, no redundant logic to keep in sync.
+          minimumAmountOut: account.expectedOutputAmount,
+        });
+        swapInstructionData = built.swapInstructionData;
+        remainingAccounts = built.remainingAccounts;
+        swapProgram = this.config.raydiumCpmmProgramId;
       } else {
         const built = await this.mockDexBuilder.buildSwap({
           userInputTokenAccount: account.userInputTokenAccount,
