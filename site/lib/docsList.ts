@@ -16,4 +16,14 @@ export const DOC_PAGES: DocPage[] = [
   { slug: "worked-examples", title: "Worked Examples", sourcePath: "docs/WORKED_EXAMPLES.md" },
   { slug: "engineering-log", title: "Engineering Log", sourcePath: "docs/ENGINEERING_LOG.md" },
   { slug: "risk-register", title: "Risk Register", sourcePath: "docs/RISK_REGISTER.md" },
+  {
+    slug: "why-solana-swaps-fail",
+    title: "Why Solana Swaps Fail",
+    sourcePath: "solana_stalled_transactions_article.md",
+  },
+  {
+    slug: "solana-transaction-failed",
+    title: "Solana Transaction Failed? What to Do",
+    sourcePath: "solana_transaction_failed_what_to_do.md",
+  },
 ];
